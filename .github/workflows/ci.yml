@@ -115,9 +115,20 @@ jobs:
     - name: Audit dependencies
       run: npm audit --audit-level moderate
       
-    - name: Check for secrets
+    - name: Get commit count
+      id: commit_count
+      run: echo "count=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
+      
+    - name: Check for secrets (if multiple commits)
+      if: steps.commit_count.outputs.count > 1
       uses: trufflesecurity/trufflehog@main
       with:
         path: ./
-        base: main
+        base: ${{ github.event.repository.default_branch }}
         head: HEAD
+        
+    - name: Check for secrets (filesystem scan)
+      if: steps.commit_count.outputs.count == 1
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
