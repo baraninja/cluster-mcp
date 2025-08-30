@@ -1,0 +1,26 @@
+{
+  "name": "cluster-mcp",
+  "version": "0.1.0",
+  "description": "Ultimate MCP researcher cluster with research, socioeconomy, and news servers",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "servers/*"
+  ],
+  "scripts": {
+    "build": "npm run -w @cluster-mcp/core build && npm -ws run build --if-present",
+    "dev": "npm -ws run dev --if-present",
+    "test": "npm -ws run test --if-present",
+    "pack:all": "npm -ws run pack:mcpb --if-present",
+    "clean": "npm -ws run clean --if-present && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "license": "MIT",
+  "keywords": ["mcp", "research", "socioeconomy", "news", "data", "api"]
+}

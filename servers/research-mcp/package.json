@@ -1,0 +1,22 @@
+{
+  "name": "research-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for research data from OpenAlex, Crossref, and Europe PMC",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/server.js",
+    "pack:mcpb": "echo 'MCPB packaging not implemented yet - use manual STDIO configuration'",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@cluster-mcp/core": "*",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

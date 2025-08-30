@@ -1,0 +1,112 @@
+# Semantic ID mappings across socioeconomic data providers
+# Format: semantic_id -> { provider_code, label, unit, notes }
+
+employment_rate_15_64:
+  label: "Employment rate, age 15-64"
+  unit: "%"
+  eurostat: "LFSI_EMP_A"
+  wb: "SL.EMP.TOTL.SP.ZS"
+  description: "Employment as percentage of population aged 15-64"
+
+unemployment_rate:
+  label: "Unemployment rate"
+  unit: "%"
+  eurostat: "UNE_RT_A" 
+  wb: "SL.UEM.TOTL.ZS"
+  oecd: "MEI_CLI.LMUNEMPRAW.M"
+  description: "Unemployed as percentage of total labor force"
+
+gdp_constant_prices:
+  label: "GDP at constant prices"
+  unit: "USD_2015"
+  wb: "NY.GDP.MKTP.KD"
+  oecd: "SNA_TABLE1.B1_GE.GDP.C"
+  description: "Gross domestic product at constant 2015 US dollars"
+
+gdp_per_capita_constant:
+  label: "GDP per capita, constant prices"
+  unit: "USD_2015"
+  wb: "NY.GDP.PCAP.KD"
+  oecd: "SNA_TABLE1.B1_GE.GDPPC.C"
+  description: "GDP per capita at constant 2015 US dollars"
+
+inflation_cpi:
+  label: "Consumer price inflation"
+  unit: "%"
+  wb: "FP.CPI.TOTL.ZG"
+  oecd: "MEI.CPALTT01.GY"
+  eurostat: "PRC_HICP_AIND"
+  description: "Annual percentage change in consumer prices"
+
+population_total:
+  label: "Total population"
+  unit: "persons"
+  wb: "SP.POP.TOTL"
+  oecd: "DSD_DEMOG.POP_TOT.A"
+  eurostat: "DEMO_PJAN"
+  description: "Total population"
+
+exports_goods_services:
+  label: "Exports of goods and services"
+  unit: "% of GDP"
+  wb: "NE.EXP.GNFS.ZS"
+  oecd: "SNA_TABLE1.P6.EXP.S"
+  description: "Exports as percentage of GDP"
+
+government_debt:
+  label: "General government gross debt"
+  unit: "% of GDP"
+  wb: "GC.DOD.TOTL.GD.ZS"
+  oecd: "EO109_INTERNET.GGFL.S"
+  eurostat: "GOV_10DD_EDPT1"
+  description: "Government debt as percentage of GDP"
+
+research_development:
+  label: "Research and development expenditure"
+  unit: "% of GDP"
+  wb: "GB.XPD.RSDV.GD.ZS"
+  oecd: "MSTI_PUB.GERD_TOT.PCT_GDP"
+  eurostat: "RD_E_GERDTOT"
+  description: "R&D expenditure as percentage of GDP"
+
+internet_users:
+  label: "Internet users"
+  unit: "% of population"
+  wb: "IT.NET.USER.ZS"
+  description: "Individuals using the Internet as percentage of population"
+
+education_tertiary:
+  label: "Tertiary education completion"
+  unit: "% of population"
+  wb: "SE.TER.CUAT.BA.ZS"
+  oecd: "EAG_NEAC.ISCED11_5T8.T.PC_25T64"
+  eurostat: "EDAT_LFS_9903"
+  description: "Tertiary education attainment among population aged 25-64"
+
+carbon_emissions:
+  label: "CO2 emissions"
+  unit: "metric tons per capita"
+  wb: "EN.ATM.CO2E.PC"
+  oecd: "AIR_GHGT.CO2.T_HAB"
+  description: "Carbon dioxide emissions per capita"
+
+life_expectancy:
+  label: "Life expectancy at birth"
+  unit: "years"
+  wb: "SP.DYN.LE00.IN"
+  oecd: "HEALTH_STAT.LIFEXP.TOT"
+  description: "Life expectancy at birth, total years"
+
+poverty_rate:
+  label: "Poverty headcount ratio"
+  unit: "% of population"
+  wb: "SI.POV.DDAY"
+  oecd: "IDD.POVRATE.I50"
+  description: "Population living below poverty line"
+
+energy_renewable:
+  label: "Renewable energy consumption"
+  unit: "% of total"
+  wb: "EG.FEC.RNEW.ZS"
+  oecd: "IEA_REN.RENEWELC.PC"
+  description: "Renewable energy as percentage of total energy consumption"

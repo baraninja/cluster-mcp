@@ -1,0 +1,15 @@
+{
+  "name": "news-mcp",
+  "description": "Global news data from GDELT DOC 2.0",
+  "version": "0.1.0",
+  "tools": [
+    {
+      "name": "search_news",
+      "description": "Search global news articles using GDELT DOC 2.0"
+    },
+    {
+      "name": "timeline",
+      "description": "Get news timeline for a topic"
+    }
+  ]
+}

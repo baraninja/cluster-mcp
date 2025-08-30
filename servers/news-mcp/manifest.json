@@ -1,0 +1,11 @@
+{
+  "name": "news-mcp",
+  "version": "0.1.0",
+  "description": "MCP server providing access to global news data from GDELT DOC 2.0",
+  "author": "cluster-mcp",
+  "license": "MIT",
+  "runtime": {
+    "node": ">=20.0.0"
+  },
+  "entrypoint": "dist/server.js"
+}

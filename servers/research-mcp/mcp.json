@@ -1,0 +1,19 @@
+{
+  "name": "research-mcp",
+  "description": "Research data from OpenAlex, Crossref, and Europe PMC",
+  "version": "0.1.0",
+  "tools": [
+    {
+      "name": "search_papers",
+      "description": "Search academic papers using OpenAlex"
+    },
+    {
+      "name": "get_paper",
+      "description": "Get detailed information about a paper by DOI"
+    },
+    {
+      "name": "bibtex_for_doi", 
+      "description": "Get BibTeX citation for a DOI"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "name": "socioeconomy-mcp",
+  "description": "Socioeconomic data from World Bank, Eurostat, OECD, and ILO",
+  "version": "0.1.0",
+  "tools": [
+    {
+      "name": "get_series",
+      "description": "Get time series data for a semantic indicator"
+    },
+    {
+      "name": "search_indicator",
+      "description": "Search available indicators across providers"
+    },
+    {
+      "name": "explain_routing", 
+      "description": "Explain routing logic for a semantic ID and geography"
+    },
+    {
+      "name": "map_region_code",
+      "description": "Convert between different region coding systems"
+    }
+  ]
+}

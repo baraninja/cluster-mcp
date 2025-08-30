@@ -1,0 +1,11 @@
+{
+  "name": "socioeconomy-mcp",
+  "version": "0.1.0",
+  "description": "MCP server providing access to socioeconomic data from World Bank, Eurostat, OECD, and ILO",
+  "author": "cluster-mcp",
+  "license": "MIT",
+  "runtime": {
+    "node": ">=20.0.0"
+  },
+  "entrypoint": "dist/server.js"
+}
