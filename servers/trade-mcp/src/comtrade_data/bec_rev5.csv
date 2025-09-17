@@ -1,0 +1,179 @@
+code,text,parent,level
+1,"1 - Agriculture, forestry, fishing, food, beverages, tobacco ",,1
+11,"11 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods",,1
+111,"111 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Intermediate Consumption",,1
+1111,"1111 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Intermediate Consumption|Primary",,1
+1112,"1112 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Intermediate Consumption|Processed",,1
+111210,"111210 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Intermediate Consumption|Processed|Generic",,1
+111220,"111220 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Intermediate Consumption|Processed|Specific",,1
+112,"112 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Gross Fixed Capital Formation",,1
+112010,"112010 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Gross Fixed Capital Formation|Generic",,1
+112020,"112020 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Gross Fixed Capital Formation|Specific",,1
+113,"113 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Final Consumption",,1
+1131,"1131 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Final Consumption|Primary",,1
+113101,"113101 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Final Consumption|Primary|Non-durable",,1
+113102,"113102 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Final Consumption|Primary|Durable",,1
+1132,"1132 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Final Consumption|Processed",,1
+113201,"113201 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Final Consumption|Processed|Non-durable",,1
+113202,"113202 - Agriculture, forestry, fishing, food, beverages, tobacco |Goods|Final Consumption|Processed|Durable",,1
+12,"12 - Agriculture, forestry, fishing, food, beverages, tobacco |Services",,1
+121,"121 - Agriculture, forestry, fishing, food, beverages, tobacco |Services|Intermediate Consumption",,1
+121010,"121010 - Agriculture, forestry, fishing, food, beverages, tobacco |Services|Intermediate Consumption|Generic",,1
+121020,"121020 - Agriculture, forestry, fishing, food, beverages, tobacco |Services|Intermediate Consumption|Specific",,1
+123,"123 - Agriculture, forestry, fishing, food, beverages, tobacco |Services|Final Consumption",,1
+2,"2 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment ",,1
+21,"21 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods",,1
+211,"211 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Intermediate Consumption",,1
+2111,"2111 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Intermediate Consumption|Primary",,1
+2112,"2112 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Intermediate Consumption|Processed",,1
+211210,"211210 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Intermediate Consumption|Processed|Generic",,1
+211220,"211220 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Intermediate Consumption|Processed|Specific",,1
+212,"212 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Gross Fixed Capital Formation",,1
+212010,"212010 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Gross Fixed Capital Formation|Generic",,1
+212020,"212020 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Gross Fixed Capital Formation|Specific",,1
+213,"213 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Final Consumption",,1
+2131,"2131 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Final Consumption|Primary",,1
+213101,"213101 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Final Consumption|Primary|Non-durable",,1
+213102,"213102 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Final Consumption|Primary|Durable",,1
+2132,"2132 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Final Consumption|Processed",,1
+213201,"213201 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Final Consumption|Processed|Non-durable",,1
+213202,"213202 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Goods|Final Consumption|Processed|Durable",,1
+22,"22 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Services",,1
+221,"221 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Services|Intermediate Consumption",,1
+221010,"221010 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Services|Intermediate Consumption|Generic",,1
+221020,"221020 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Services|Intermediate Consumption|Specific",,1
+223,"223 - Mining, quarrying, refinery, fuels, chemicals, electricity, water, waste treatment |Services|Final Consumption",,1
+3,"3 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  ",,1
+31,"31 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods",,1
+311,"311 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Intermediate Consumption",,1
+3111,"3111 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Intermediate Consumption|Primary",,1
+3112,"3112 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Intermediate Consumption|Processed",,1
+311210,"311210 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Intermediate Consumption|Processed|Generic",,1
+311220,"311220 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Intermediate Consumption|Processed|Specific",,1
+312,"312 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Gross Fixed Capital Formation",,1
+312010,"312010 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Gross Fixed Capital Formation|Generic",,1
+312020,"312020 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Gross Fixed Capital Formation|Specific",,1
+313,"313 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Final Consumption",,1
+3131,"3131 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Final Consumption|Primary",,1
+313101,"313101 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Final Consumption|Primary|Non-durable",,1
+313102,"313102 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Final Consumption|Primary|Durable",,1
+3132,"3132 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Final Consumption|Processed",,1
+313201,"313201 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Final Consumption|Processed|Non-durable",,1
+313202,"313202 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Goods|Final Consumption|Processed|Durable",,1
+32,"32 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Services",,1
+321,"321 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Services|Intermediate Consumption",,1
+321010,"321010 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Services|Intermediate Consumption|Generic",,1
+321020,"321020 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Services|Intermediate Consumption|Specific",,1
+323,"323 - Construction, wood, glass, stone, basic metals, housing, electrical appliances, furniture  |Services|Final Consumption",,1
+4,"4 - Textile, apparel, shoes ",,1
+41,"41 - Textile, apparel, shoes |Goods",,1
+411,"411 - Textile, apparel, shoes |Goods|Intermediate Consumption",,1
+4111,"4111 - Textile, apparel, shoes |Goods|Intermediate Consumption|Primary",,1
+4112,"4112 - Textile, apparel, shoes |Goods|Intermediate Consumption|Processed",,1
+411210,"411210 - Textile, apparel, shoes |Goods|Intermediate Consumption|Processed|Generic",,1
+411220,"411220 - Textile, apparel, shoes |Goods|Intermediate Consumption|Processed|Specific",,1
+412,"412 - Textile, apparel, shoes |Goods|Gross Fixed Capital Formation",,1
+412010,"412010 - Textile, apparel, shoes |Goods|Gross Fixed Capital Formation|Generic",,1
+412020,"412020 - Textile, apparel, shoes |Goods|Gross Fixed Capital Formation|Specific",,1
+413,"413 - Textile, apparel, shoes |Goods|Final Consumption",,1
+4131,"4131 - Textile, apparel, shoes |Goods|Final Consumption|Primary",,1
+413101,"413101 - Textile, apparel, shoes |Goods|Final Consumption|Primary|Non-durable",,1
+413102,"413102 - Textile, apparel, shoes |Goods|Final Consumption|Primary|Durable",,1
+4132,"4132 - Textile, apparel, shoes |Goods|Final Consumption|Processed",,1
+413201,"413201 - Textile, apparel, shoes |Goods|Final Consumption|Processed|Non-durable",,1
+413202,"413202 - Textile, apparel, shoes |Goods|Final Consumption|Processed|Durable",,1
+42,"42 - Textile, apparel, shoes |Services",,1
+421,"421 - Textile, apparel, shoes |Services|Intermediate Consumption",,1
+421010,"421010 - Textile, apparel, shoes |Services|Intermediate Consumption|Generic",,1
+421020,"421020 - Textile, apparel, shoes |Services|Intermediate Consumption|Specific",,1
+423,"423 - Textile, apparel, shoes |Services|Final Consumption",,1
+5,"5 - Transport equipment and services, travel, postal services",,1
+51,"51 - Transport equipment and services, travel, postal services|Goods",,1
+511,"511 - Transport equipment and services, travel, postal services|Goods|Intermediate Consumption",,1
+5111,"5111 - Transport equipment and services, travel, postal services|Goods|Intermediate Consumption|Primary",,1
+5112,"5112 - Transport equipment and services, travel, postal services|Goods|Intermediate Consumption|Processed",,1
+511210,"511210 - Transport equipment and services, travel, postal services|Goods|Intermediate Consumption|Processed|Generic",,1
+511220,"511220 - Transport equipment and services, travel, postal services|Goods|Intermediate Consumption|Processed|Specific",,1
+512,"512 - Transport equipment and services, travel, postal services|Goods|Gross Fixed Capital Formation",,1
+512010,"512010 - Transport equipment and services, travel, postal services|Goods|Gross Fixed Capital Formation|Generic",,1
+512020,"512020 - Transport equipment and services, travel, postal services|Goods|Gross Fixed Capital Formation|Specific",,1
+513,"513 - Transport equipment and services, travel, postal services|Goods|Final Consumption",,1
+5131,"5131 - Transport equipment and services, travel, postal services|Goods|Final Consumption|Primary",,1
+513101,"513101 - Transport equipment and services, travel, postal services|Goods|Final Consumption|Primary|Non-durable",,1
+513102,"513102 - Transport equipment and services, travel, postal services|Goods|Final Consumption|Primary|Durable",,1
+5132,"5132 - Transport equipment and services, travel, postal services|Goods|Final Consumption|Processed",,1
+513201,"513201 - Transport equipment and services, travel, postal services|Goods|Final Consumption|Processed|Non-durable",,1
+513202,"513202 - Transport equipment and services, travel, postal services|Goods|Final Consumption|Processed|Durable",,1
+52,"52 - Transport equipment and services, travel, postal services|Services",,1
+521,"521 - Transport equipment and services, travel, postal services|Services|Intermediate Consumption",,1
+521010,"521010 - Transport equipment and services, travel, postal services|Services|Intermediate Consumption|Generic",,1
+521020,"521020 - Transport equipment and services, travel, postal services|Services|Intermediate Consumption|Specific",,1
+523,"523 - Transport equipment and services, travel, postal services|Services|Final Consumption",,1
+6,"6 - ICT, media, computers, business and financial services",,1
+61,"61 - ICT, media, computers, business and financial services|Goods",,1
+611,"611 - ICT, media, computers, business and financial services|Goods|Intermediate Consumption",,1
+6111,"6111 - ICT, media, computers, business and financial services|Goods|Intermediate Consumption|Primary",,1
+6112,"6112 - ICT, media, computers, business and financial services|Goods|Intermediate Consumption|Processed",,1
+611210,"611210 - ICT, media, computers, business and financial services|Goods|Intermediate Consumption|Processed|Generic",,1
+611220,"611220 - ICT, media, computers, business and financial services|Goods|Intermediate Consumption|Processed|Specific",,1
+612,"612 - ICT, media, computers, business and financial services|Goods|Gross Fixed Capital Formation",,1
+612010,"612010 - ICT, media, computers, business and financial services|Goods|Gross Fixed Capital Formation|Generic",,1
+612020,"612020 - ICT, media, computers, business and financial services|Goods|Gross Fixed Capital Formation|Specific",,1
+613,"613 - ICT, media, computers, business and financial services|Goods|Final Consumption",,1
+6131,"6131 - ICT, media, computers, business and financial services|Goods|Final Consumption|Primary",,1
+613101,"613101 - ICT, media, computers, business and financial services|Goods|Final Consumption|Primary|Non-durable",,1
+613102,"613102 - ICT, media, computers, business and financial services|Goods|Final Consumption|Primary|Durable",,1
+6132,"6132 - ICT, media, computers, business and financial services|Goods|Final Consumption|Processed",,1
+613201,"613201 - ICT, media, computers, business and financial services|Goods|Final Consumption|Processed|Non-durable",,1
+613202,"613202 - ICT, media, computers, business and financial services|Goods|Final Consumption|Processed|Durable",,1
+62,"62 - ICT, media, computers, business and financial services|Services",,1
+621,"621 - ICT, media, computers, business and financial services|Services|Intermediate Consumption",,1
+621010,"621010 - ICT, media, computers, business and financial services|Services|Intermediate Consumption|Generic",,1
+621020,"621020 - ICT, media, computers, business and financial services|Services|Intermediate Consumption|Specific",,1
+623,"623 - ICT, media, computers, business and financial services|Services|Final Consumption",,1
+7,"7 - Health, pharmaceuticals, education, cultural, sport",,1
+71,"71 - Health, pharmaceuticals, education, cultural, sport|Goods",,1
+711,"711 - Health, pharmaceuticals, education, cultural, sport|Goods|Intermediate Consumption",,1
+7111,"7111 - Health, pharmaceuticals, education, cultural, sport|Goods|Intermediate Consumption|Primary",,1
+7112,"7112 - Health, pharmaceuticals, education, cultural, sport|Goods|Intermediate Consumption|Processed",,1
+711210,"711210 - Health, pharmaceuticals, education, cultural, sport|Goods|Intermediate Consumption|Processed|Generic",,1
+711220,"711220 - Health, pharmaceuticals, education, cultural, sport|Goods|Intermediate Consumption|Processed|Specific",,1
+712,"712 - Health, pharmaceuticals, education, cultural, sport|Goods|Gross Fixed Capital Formation",,1
+712010,"712010 - Health, pharmaceuticals, education, cultural, sport|Goods|Gross Fixed Capital Formation|Generic",,1
+712020,"712020 - Health, pharmaceuticals, education, cultural, sport|Goods|Gross Fixed Capital Formation|Specific",,1
+713,"713 - Health, pharmaceuticals, education, cultural, sport|Goods|Final Consumption",,1
+7131,"7131 - Health, pharmaceuticals, education, cultural, sport|Goods|Final Consumption|Primary",,1
+713101,"713101 - Health, pharmaceuticals, education, cultural, sport|Goods|Final Consumption|Primary|Non-durable",,1
+713102,"713102 - Health, pharmaceuticals, education, cultural, sport|Goods|Final Consumption|Primary|Durable",,1
+7132,"7132 - Health, pharmaceuticals, education, cultural, sport|Goods|Final Consumption|Processed",,1
+713201,"713201 - Health, pharmaceuticals, education, cultural, sport|Goods|Final Consumption|Processed|Non-durable",,1
+713202,"713202 - Health, pharmaceuticals, education, cultural, sport|Goods|Final Consumption|Processed|Durable",,1
+72,"72 - Health, pharmaceuticals, education, cultural, sport|Services",,1
+721,"721 - Health, pharmaceuticals, education, cultural, sport|Services|Intermediate Consumption",,1
+721010,"721010 - Health, pharmaceuticals, education, cultural, sport|Services|Intermediate Consumption|Generic",,1
+721020,"721020 - Health, pharmaceuticals, education, cultural, sport|Services|Intermediate Consumption|Specific",,1
+723,"723 - Health, pharmaceuticals, education, cultural, sport|Services|Final Consumption",,1
+8,"8 - Government, military and other",,1
+81,"81 - Government, military and other|Goods",,1
+811,"811 - Government, military and other|Goods|Intermediate Consumption",,1
+8111,"8111 - Government, military and other|Goods|Intermediate Consumption|Primary",,1
+8112,"8112 - Government, military and other|Goods|Intermediate Consumption|Processed",,1
+811210,"811210 - Government, military and other|Goods|Intermediate Consumption|Processed|Generic",,1
+811220,"811220 - Government, military and other|Goods|Intermediate Consumption|Processed|Specific",,1
+812,"812 - Government, military and other|Goods|Gross Fixed Capital Formation",,1
+812010,"812010 - Government, military and other|Goods|Gross Fixed Capital Formation|Generic",,1
+812020,"812020 - Government, military and other|Goods|Gross Fixed Capital Formation|Specific",,1
+813,"813 - Government, military and other|Goods|Final Consumption",,1
+8131,"8131 - Government, military and other|Goods|Final Consumption|Primary",,1
+813101,"813101 - Government, military and other|Goods|Final Consumption|Primary|Non-durable",,1
+813102,"813102 - Government, military and other|Goods|Final Consumption|Primary|Durable",,1
+8132,"8132 - Government, military and other|Goods|Final Consumption|Processed",,1
+813201,"813201 - Government, military and other|Goods|Final Consumption|Processed|Non-durable",,1
+813202,"813202 - Government, military and other|Goods|Final Consumption|Processed|Durable",,1
+82,"82 - Government, military and other|Services",,1
+821,"821 - Government, military and other|Services|Intermediate Consumption",,1
+821010,"821010 - Government, military and other|Services|Intermediate Consumption|Generic",,1
+821020,"821020 - Government, military and other|Services|Intermediate Consumption|Specific",,1
+823,"823 - Government, military and other|Services|Final Consumption",,1
+9,9 - Not-elsewhere-specified (NES),,1
+TOTAL,Total of all BEC5 categories,,1

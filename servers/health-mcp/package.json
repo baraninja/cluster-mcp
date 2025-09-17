@@ -1,0 +1,22 @@
+{
+  "name": "health-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for global health indicators (WHO, OECD, World Bank)",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc && node scripts/postbuild.cjs",
+    "dev": "tsc --watch",
+    "start": "node dist/server.js",
+    "pack:mcpb": "echo 'MCPB packaging not implemented yet - use manual STDIO configuration'",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@cluster-mcp/core": "*",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

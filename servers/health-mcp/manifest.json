@@ -1,0 +1,11 @@
+{
+  "name": "health-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for WHO Global Health Observatory indicators with OECD and World Bank fallbacks",
+  "author": "cluster-mcp",
+  "license": "MIT",
+  "runtime": {
+    "node": ">=20.0.0"
+  },
+  "entrypoint": "dist/server.js"
+}

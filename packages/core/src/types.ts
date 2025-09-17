@@ -7,7 +7,10 @@ export type ProviderKey =
   | 'openalex' 
   | 'crossref' 
   | 'europepmc' 
-  | 'gdelt';
+  | 'gdelt'
+  | 'who'
+  | 'openaq'
+  | 'comtrade';
 
 export interface Series {
   semanticId: string;

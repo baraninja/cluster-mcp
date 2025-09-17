@@ -1,0 +1,9 @@
+{
+  "name": "environment-mcp",
+  "description": "Air quality monitoring from OpenAQ v3",
+  "version": "0.1.0",
+  "tools": [
+    { "name": "get_air_quality", "description": "Retrieve air quality measurements for a region" },
+    { "name": "latest_at", "description": "Get the latest measurements for a specific location" }
+  ]
+}

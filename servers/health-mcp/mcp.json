@@ -1,0 +1,11 @@
+{
+  "name": "health-mcp",
+  "description": "Global health indicators from WHO GHO with OECD and World Bank backup",
+  "version": "0.1.0",
+  "tools": [
+    { "name": "search_indicator", "description": "Search for health indicators by keyword" },
+    { "name": "get_series", "description": "Fetch a time series for a given health indicator" },
+    { "name": "compare_countries", "description": "Compare the same indicator across multiple countries" },
+    { "name": "get_metadata", "description": "Retrieve metadata for a specific health indicator" }
+  ]
+}

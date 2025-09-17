@@ -1,6 +1,6 @@
 # Cluster MCP - Ultimate Research Data Suite
 
-A comprehensive monorepo containing three specialized MCP servers for researchers and analysts:
+A comprehensive monorepo containing six specialized MCP servers for researchers and analysts:
 
 ## 🔬 Servers
 
@@ -22,6 +22,24 @@ A comprehensive monorepo containing three specialized MCP servers for researcher
 - **GDELT DOC 2.0**: Real-time news search & timelines
 - Full-text search across global news sources
 - Sentiment analysis and trending topics
+
+### health-mcp
+**Global health indicators**
+- **WHO GHO OData**: Primary source for health stats
+  - Uses OData filters on sex/years with local geo filtering to stay under WHO's 1k row cap
+- **OECD SDMX**: Supplemental health flows
+- **World Bank**: Health, nutrition, population fallback
+
+### environment-mcp
+**Air quality monitoring**
+- **OpenAQ v3**: Latest and historical measurements
+- Handles rate limits via X-API-Key headers
+
+### trade-mcp
+**International trade flows**
+- **UN Comtrade APIM**: Modern API with subscription key
+- **Legacy Comtrade API**: Fallback when APIM unavailable
+- **Offline catalogues**: HS 2022, BEC Rev.5, SITC Rev.4, partners & reporters cached in `src/comtrade_data/`
 
 ## 🚀 Quick Start
 
@@ -49,6 +67,24 @@ Add to your `claude_desktop_config.json`:
     "news-mcp": {
       "command": "node",
       "args": ["/path/to/cluster-mcp/servers/news-mcp/dist/server.js"] 
+    },
+    "health-mcp": {
+      "command": "node",
+      "args": ["/path/to/cluster-mcp/servers/health-mcp/dist/server.js"],
+      "env": { "CONTACT_EMAIL": "your.email@domain.com" }
+    },
+    "environment-mcp": {
+      "command": "node",
+      "args": ["/path/to/cluster-mcp/servers/environment-mcp/dist/server.js"],
+      "env": { "OPENAQ_API_KEY": "your-openaq-key" }
+    },
+    "trade-mcp": {
+      "command": "node",
+      "args": ["/path/to/cluster-mcp/servers/trade-mcp/dist/server.js"],
+      "env": {
+        "COMTRADE_API_KEY": "your-comtrade-key",
+        "COMTRADE_BASE_URL": "https://comtradeapi.un.org/ga/" 
+      }
     }
   }
 }
@@ -108,7 +144,10 @@ cluster-mcp/
 ├── servers/
 │   ├── research-mcp/       # Academic literature server
 │   ├── socioeconomy-mcp/   # Economic data server  
-│   └── news-mcp/           # News monitoring server
+│   ├── news-mcp/           # News monitoring server
+│   ├── health-mcp/         # Global health indicators server
+│   ├── environment-mcp/    # Air quality server
+│   └── trade-mcp/          # International trade server
 └── docs/                   # Documentation
 ```
 
@@ -134,10 +173,25 @@ cluster-mcp/
 ### News MCP
 - **GDELT**: Free API (no key required)
 
+### Health MCP
+- **WHO GHO**: Open OData endpoint (no key required)
+- **OECD SDMX**: Public endpoint (no key required)
+- **World Bank HNP**: Open API (no key required)
+
+### Environment MCP
+- **OpenAQ v3**: Requires API key via `X-API-Key` header (60/min, 2000/h)
+
+### Trade MCP
+- **UN Comtrade APIM**: Requires subscription key (`Ocp-Apim-Subscription-Key`)
+- **Legacy Comtrade API**: Optional fallback (no key required)
+
 ### Recommended Environment Variables
 ```bash
 # research-mcp: Used for Crossref/OpenAlex polite access  
 CONTACT_EMAIL=your.email@domain.com
+OPENAQ_API_KEY=your-openaq-key
+COMTRADE_API_KEY=your-comtrade-key
+COMTRADE_BASE_URL=https://comtradeapi.un.org/ga/
 
 # Optional: Cache database path (defaults to in-memory)
 CLUSTER_MCP_CACHE_PATH=./cache.db
@@ -147,11 +201,8 @@ CLUSTER_MCP_CACHE_PATH=./cache.db
 
 All servers implement:
 - **Automatic retry** with exponential backoff (350ms, 700ms, 1050ms)
-- **In-memory caching** with configurable TTL:
-  - Research APIs: 24 hours
-  - Economic APIs: 6 hours  
-  - News APIs: 6 hours
-- **Respectful rate limiting** per provider guidelines
+- **In-memory caching** with configurable TTL tuned per provider family (research, health, socioeconomy, environment, trade)
+- **Respectful rate limiting** based on response headers (`Retry-After`, `x-ratelimit-*`)
 
 ## 📚 Semantic Indicators
 
@@ -181,6 +232,9 @@ Shared utilities including:
 - **Academic**: OpenAlex (25M+ papers), Crossref (130M+ DOIs), Europe PMC (life sciences)
 - **Economic**: World Bank (1400+ indicators), Eurostat (EU-27), OECD (38 countries), ILO (labor stats)
 - **News**: GDELT (global news monitoring, 100+ languages)
+- **Health**: WHO Global Health Observatory, OECD Health Statistics, World Bank HNP
+- **Environment**: OpenAQ v3 network (4000+ cities)
+- **Trade**: UN Comtrade (APIM + legacy)
 
 ## 🧪 Testing
 

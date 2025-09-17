@@ -1,0 +1,44 @@
+life_expectancy_birth_total:
+  label: "Life expectancy at birth, total"
+  unit: "years"
+  who: "WHOSIS_000001"
+  dim1: "SEX_BTSX"
+  oecd:
+    flow: "HEALTH_STAT"
+    keyTemplate: "{LOCATION}.LIFEEXP.TOT.A"
+  wb: "SP.DYN.LE00.IN"
+
+life_expectancy_birth_male:
+  label: "Life expectancy at birth, male"
+  unit: "years"
+  who: "WHOSIS_000001"
+  dim1: "SEX_MLE"
+
+life_expectancy_birth_female:
+  label: "Life expectancy at birth, female"
+  unit: "years"
+  who: "WHOSIS_000001"
+  dim1: "SEX_FMLE"
+healthy_life_expectancy_total:
+  label: "Healthy life expectancy at birth, total"
+  unit: "years"
+  who: "WHOSIS_000002"
+  dim1: "SEX_BTSX"
+
+healthy_life_expectancy_male:
+  label: "Healthy life expectancy at birth, male"
+  unit: "years"
+  who: "WHOSIS_000002"
+  dim1: "SEX_MLE"
+
+healthy_life_expectancy_female:
+  label: "Healthy life expectancy at birth, female"
+  unit: "years"
+  who: "WHOSIS_000002"
+  dim1: "SEX_FMLE"
+
+life_expectancy_at_birth:
+  label: "Life expectancy at birth"
+  unit: "years"
+  who: "WHOSIS_000001"
+  dim1: "SEX_BTSX"

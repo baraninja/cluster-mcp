@@ -1,0 +1,191 @@
+Code,Title
+ADVERTISINGTYPE,SUBSTANCE_ABUSE_ADVERTISING_TYPES
+AGEGROUP,Age Group
+ALCOHOLTYPE,Beverage Types
+AMRGLASSCATEGORY,AMR GLASS Category
+ANTIBIOTIC,Antibiotic
+ARCHIVE,Archive date
+ASSISTIVETECHBARRIER,Barriers to accessing assistive products
+ASSISTIVETECHFUNDING,Funding for assistive tech products
+ASSISTIVETECHPRODUCT,Assistive technology product
+ASSISTIVETECHSATIACTIVITY,Satisfaction with assistive products for different environments and activities
+ASSISTIVETECHSATISERVICE,Satisfaction with assistive products and related services
+ASSISTIVETECHSOURCE,Sources of assistive products
+ASSISTIVETECHSUBQUESTION,Assistive technology subquestion
+ASSISTIVETECHTRAVELDISTANCE,Travel distance to obtain assistive products
+AWARENESSACTIVITYTYPE,SUBSTANCE_ABUSE_AWARENESS_ACTIVITY_TYPES
+BACGROUP,SUBSTANCE_ABUSE_BAC_GROUPS
+BEVERAGE,Beverage
+BEVERAGETYPE,Beverage type
+CALCULATIONTYPE,Calculation/Adjustment
+CAPACITY,Capacity
+CAREPATIENT,Patient type
+CARESECTOR,Care sector
+CCH_SUBQUESTION,CCH Survey sub-question
+CHILDCAUSE,Cause of death
+CLINICALSUPERVISION,RSUD_CLINICAL_SUPERVISION
+CO_APPOINTMENT,Staff appointment
+CO_BUDGETCONCEPTS,Programme budget concepts
+CO_CSSPRIORITIES,Strategic priorities
+CO_CSSPRIORITIES_STATUS,Strategic priorities status
+CO_FUNDINGTYPE,Funding type
+CO_GOVSECTORS,Government sectors
+CO_GPW13_STRATEGIC,GPW13 strategic priority
+CO_INTER_LOCAL_STAFF,"Type of staff: International, Local"
+CO_INTERGOVORG,Intergovernmental Organizations
+CO_KEYFUNCTIONS,Key  functions
+CO_LINKS,Country offices links
+CO_LOCATIONFACILITY,Location or facility
+CO_LOCATIONFACILITY_LEVELS,Location or facility details
+CO_ORG_LEVEL,Organization levels
+CO_ORG_STRATEGY,WHO Strategy
+CO_OURPARTNERS,Our partners
+CO_SEAHPRTRAINING,"Training on Sexual exploitation, abuse and harassment prevention and response"
+CO_STAFFCO,Country offices composition
+CO_STAFFCORECPCP,Type of staff considered as core by the CPCP initiative
+CO_STAFFTYPE,Staff type
+CO_STAFFTYPE_CO,Type of staff in country office
+CO_UNSYSTEM,United Nations System
+COMMUNITYACTIONTYPE,Community Action
+CONSUMPTIONTYPE,Consumption type
+COORDINATINGENTITIES,SUBSTANCE_ABUSE_COORDINATING_ENTITIES
+COUNTRY,Country
+COUNTY,County
+DATANATURE,Data nature
+DATASOURCE,Data source
+DHSMICSGEOREGION,DHS/MICS subnational regions (Health equity monitor)
+DONORTYPE,Donor type
+DRINKDRIVINGDEFINITIONTYPE,Drinking and Driving Definition Type
+DRIVERTYPE,Driver Type
+DRIVINGTESTTYPE,Driving Test Type
+DRUG,RSUD_DRUGS
+DRUGPRESCRIPTION,RSUD_DRUG_PRESCRIPTION
+DRUGSUPERVISION,RSUD_DRUG_SUPERVISION
+EDUCATIONLEVEL,Education Level
+EMFBODYPART,Body part
+EMFEXPOSED,Exposed
+EMFFREQUENCY,Frequency
+EMFRADIOBAND,Radio band
+ENVCAUSE,Cause
+EXCISETAXTYPE,Excise tax type
+FAOREGION,FAO region
+FOODBORNE_HAZARD1,Foodborne hazard (Level 1)
+FOODBORNE_HAZARD2,Foodborne hazard (Level 2)
+FOODBORNE_HAZARD3,Foodborne hazard (Level 3)
+GBDCHILDCAUSES,Child cause
+GBDREGION,GBD Region
+GHECAUSE,GHE cause of death codes
+GHECAUSELEVEL1,Cause group
+GHECAUSELEVEL2,Cause
+GHECAUSELEVEL3,Subcause group
+GHECAUSELEVEL4,Subcause
+GHECAUSES,Causes
+GHO,Indicator
+GLASSAMCAWARE_ANTIBIOTICSGROUP,AWARE Antibiotics group
+GLOBAL,Global
+GOEQUESTION,Goe question
+GOVERNMENTBENEFIT,RSUD_GOVERNMENT_BENEFITS
+GROUP,RSUD_GROUPS
+HARMANDCONSEQUENCE,SUBSTANCE_ABUSE_HARM_AND_CONSEQUENCES
+HEALTHCAREFACILITY,Health care facility type
+HEALTHSTATUS,Health Status
+HEP_POLICY,Hepatitis-related laws and policies from various sources
+HHS_POLICY,"Policies for Hepatitis, HIV, STIs"
+HHS_POLICYTYPE,"Grouping of policies for HIV, Hepatitis, and STIs"
+HOUSEHOLD_COMP_BY_AGE,Household composition by age
+HOUSEHOLDCOOKINGFUEL,Cooking fuel
+HOUSEHOLDWEALTH,Household wealth
+IHRSPARCAPACITYLEVEL,IHR SPAR Capacity Level
+INADEQUACY,Inadequacy
+KE_CORE,Kenya Core Indicators
+KE_COUNTY,Kenya Counties
+LEGISLATIONTYPE,Legislation type
+MEASUREIMPORTANCETYPE,SUBSTANCE_ABUSE_MEASURE_IMPORTANCE_TYPE
+MGHEREG,MGHE Region
+MNFINDICATOR,Nutrition chimera voltron indicator
+MNFSUMMARY,Nutrition chimera voltron summary value
+MOTOCYCLEOCCUPANTTYPE,Motorcycle Occupant Type
+NATIONALSYSTEMTYPE,National System Type
+NCDCCS_QUESTION,NCD country capacity survey indicator
+NCDCCS_SECTION,NCD country capacity survey section
+NGO,RSUD_NGOS
+OPENACCESSSERVICE,RSUD_OPEN_ACCESS_SERVICES
+PATIENTSAFETY_STRATEGICOBJECTIVE,Patient safety strategic objective
+PATIENTSAFETY_STRATEGY,Patient safety strategy
+PATIENTSAFETY_SURVEYQUESTION,Patient safety core indicators
+PENALTYTYPE,Penalty Type
+PHONEACCESSTYPE,Phone Access Type
+POLICYADOPTIONLEVEL,SUBSTANCE_ABUSE_POLICY_ADOPTION_LEVELS
+POLICYFRAMEWORK,SUBSTANCE_ABUSE_POLICY_FRAMEWORKS
+POLICYLEGISLATIONSTRATEGYPLAN,Policy/Legislation/Strategy/Plan implementation
+POLICYSECTOR,SUBSTANCE_ABUSE_POLICY_SECTORS
+POP_TYPE,Population type
+PREGNANCYSTATUS,Pregnancy status
+PRICE,Price
+PRICEMEASURETYPE,Price measure types
+PROGRAMME,RSUD_PROGRAMMES
+PUBLICPLACE,SUBSTANCE_ABUSE_PUBLIC_PLACES
+PUBLICPRIVATESETTING,RSUD_PUBLIC_PRIVATE_SETTINGS
+PUBLISHSTATE,Publish state
+RADONSUBQUESTIONS,Radon subquestions
+RCREGION,RC Region
+REGION,WHO regions
+RESIDENCEAREATYPE,Residence Area Type
+ROADUSERTYPE,Road User Type
+RSUD_HIVHEP_CT,HIV / Hepatitis counselling and treatment
+RSUDHWF,Human resources / health workforce
+RSUDMAINSUBSTANCEATTREATMENT,RSUD Main substance at treatment
+RSUDMAINTENANCEACCESSRESTRICTIONS,Maintenance access restrictions
+RSUDMONITORING,Monitoring system
+RSUDPHARMACOTHERAPYOPTION,Pharmacotherapy options
+RSUDPREVENTIONPROGRAMME,Prevention programmes
+RSUDREP,Representatives
+RSUDREPORTING,Sources of reporting
+RSUDSPECIFICPOPULATION,Specific populations
+RSUDSUBSTANCEDEPENDENCE,Substance dependence
+RSUDTREATMENT,Treatment
+RSUDTREATMENTLOCATION,Treatment location
+SCSUDSURVEYQUESTIONS,Service coverage for substance use disorders survey
+SEATTYPE,Seat Type
+SEVERITY,Severity
+SEX,Sex
+SOCIALCOSTTYPE,SUBSTANCE_ABUSE_SOCIAL_COST_TYPES
+SOCIOECONOMIC,SOCIOECONOMIC_TYPES
+SOUTHPACIFIC,South Pacific
+SPECIALPOPULATION,RSUD_SPECIAL_POPULATIONS
+SPONSORSHIPORIGINATOR,Sponsorship originator
+STANDARDOFCARE,RSUD_STANDARDS_OF_CARE
+STI_POLICY,STI-related laws and policies from various sources
+SUBREGION,WHO subregions by child and adult mortality (GBD)
+SUBSTANCETYPE,RSUD_SUBSTANCE_TYPES
+SUBSTANCETYPEDISORDER,RSUD_SUBSTANCE_TYPE_DISORDERS
+SUNBED_ACCESS,Sunbed access restrictions
+SUNBED_CONTROL,Restriction and inspection of sunbed facilities
+SUNBED_INFO,Sunbed public information requirements
+SUNBED_SAFETY,Sunbed facility safety requirements
+SUNBED_TRAINING,Sunbed facility staff training requirements
+TB_BENCHMARK,TB Benchmark
+TB_CASETYPE,TB Case type
+TB_TREATHISTORY,TB Treatment history
+TB_TREATMENTTYPE,TB Treatment type
+TIMEPERIOD,Time period
+TOBACCO_INDICATOR,Tobacco MPOWER indicator
+TOBACCO_NICOTINE_PRODUCT,Tobacco and nicotine product
+UNCERTAINTY_INTERVAL,Uncertainty interval
+UNICEFREGION,UNICEF region
+UNREGION,UN Region
+UNSDGREGION,UN SDG Region
+VACCINATIONSTATUS,Vaccination status
+VEHICLESTANDARD,Vehicle standards
+WCO_TYPOLOGY,WCO Typology
+WEALTHDECILE,Wealth decile
+WEALTHQUINTILE,Wealth Quintile
+WEALTHTERCILE,Wealth tercile
+WHOINCOMEREGION,WHO Income Region
+WORLDBANKINCOMEGROUP,World Bank income group
+WORLDBANKREGION,World Bank Region
+WPR_DATASOURCE,WPRO Data Source
+WPR_DEMO_IND,WPRO Demo Indicator
+WRS_OUTSIDE_REPORT,WRs from outside the region year report
+WRS_STATUS,WHO Representative Status
+YEAR,Year

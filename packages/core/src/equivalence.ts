@@ -13,13 +13,18 @@ export function loadEquivalenceYaml(filePath: string): Record<string, any> {
 
 export function validateEquivalenceEntry(entry: any): boolean {
   if (!entry || typeof entry !== 'object') return false;
-  
-  const hasAnyProvider = Boolean(
-    entry.eurostat || 
-    entry.wb || 
-    entry.oecd || 
-    entry.ilostat
-  );
-  
+
+  const providerKeys = [
+    'eurostat',
+    'wb',
+    'oecd',
+    'ilostat',
+    'who',
+    'openaq',
+    'comtrade'
+  ];
+
+  const hasAnyProvider = providerKeys.some(key => Boolean(entry[key]));
+
   return hasAnyProvider && Boolean(entry.label);
 }

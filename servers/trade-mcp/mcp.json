@@ -1,0 +1,9 @@
+{
+  "name": "trade-mcp",
+  "description": "Trade statistics from UN Comtrade (v3 API and legacy fallback)",
+  "version": "0.1.0",
+  "tools": [
+    { "name": "search_hs_code", "description": "Search Harmonised System commodity codes" },
+    { "name": "get_trade_matrix", "description": "Fetch bilateral trade values for a given flow" }
+  ]
+}

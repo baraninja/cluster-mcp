@@ -1,0 +1,34 @@
+code,level,name,iso3,parent,county_code
+SE,0,Sweden,SWE,,
+SE1,1,East Sweden,SWE,SE,
+SE2,1,South Sweden,SWE,SE,
+SE3,1,North Sweden,SWE,SE,
+SE11,2,Stockholm,SWE,SE1,
+SE12,2,East-Central Sweden,SWE,SE1,
+SE21,2,Smaland and the Islands,SWE,SE2,
+SE22,2,Southern Sweden,SWE,SE2,
+SE23,2,Western Sweden,SWE,SE2,
+SE31,2,North Middle Sweden,SWE,SE3,
+SE32,2,Central Norrland,SWE,SE3,
+SE33,2,Upper Norrland,SWE,SE3,
+SE110,3,Stockholm County,SWE,SE11,01
+SE121,3,Uppsala County,SWE,SE12,03
+SE122,3,Sodermanland County,SWE,SE12,04
+SE123,3,Ostergotland County,SWE,SE12,05
+SE124,3,Orebro County,SWE,SE12,18
+SE125,3,Vastmanland County,SWE,SE12,19
+SE211,3,Jonkoping County,SWE,SE21,06
+SE212,3,Kronoberg County,SWE,SE21,07
+SE213,3,Kalmar County,SWE,SE21,08
+SE214,3,Gotland County,SWE,SE21,09
+SE221,3,Blekinge County,SWE,SE22,10
+SE224,3,Skane County,SWE,SE22,12
+SE231,3,Halland County,SWE,SE23,13
+SE232,3,Vastra Gotaland County,SWE,SE23,14
+SE311,3,Varmland County,SWE,SE31,17
+SE312,3,Dalarna County,SWE,SE31,20
+SE313,3,Gavleborg County,SWE,SE31,21
+SE321,3,Vasternorrland County,SWE,SE32,22
+SE322,3,Jamtland County,SWE,SE32,23
+SE331,3,Vasterbotten County,SWE,SE33,24
+SE332,3,Norrbotten County,SWE,SE33,25
