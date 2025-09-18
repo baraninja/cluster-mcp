@@ -14,6 +14,26 @@ import {
   getAirQualityInputSchema
 } from './tools/get_air_quality.js';
 import { latestAt, latestAtSchema, latestAtInputSchema } from './tools/latest_at.js';
+import {
+  searchLocationsTool,
+  searchLocationsSchema,
+  searchLocationsInputSchema
+} from './tools/search_locations.js';
+import {
+  getHistoricalMeasurements,
+  getHistoricalMeasurementsSchema,
+  getHistoricalMeasurementsInputSchema
+} from './tools/get_historical_measurements.js';
+import {
+  getAveragedMeasurements,
+  getAveragedMeasurementsSchema,
+  getAveragedMeasurementsInputSchema
+} from './tools/get_averaged_measurements.js';
+import {
+  getDataAvailability,
+  getDataAvailabilitySchema,
+  getDataAvailabilityInputSchema
+} from './tools/get_data_availability.js';
 
 class EnvironmentMcpServer {
   private server: Server;
@@ -43,7 +63,11 @@ class EnvironmentMcpServer {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
         this.describeTool('get_air_quality', getAirQualityInputSchema, 'Retrieve air quality measurements for a region'),
-        this.describeTool('latest_at', latestAtInputSchema, 'Get the latest measurements for a specific location')
+        this.describeTool('latest_at', latestAtInputSchema, 'Get the latest measurements for a specific location'),
+        this.describeTool('search_locations', searchLocationsInputSchema, 'Search OpenAQ locations by parameter, bounding box, or radius'),
+        this.describeTool('get_historical_measurements', getHistoricalMeasurementsInputSchema, 'Retrieve historical measurements for a location and parameter'),
+        this.describeTool('get_averaged_measurements', getAveragedMeasurementsInputSchema, 'Retrieve averaged (hours/days/months/years) measurements for a location and parameter'),
+        this.describeTool('get_data_availability', getDataAvailabilityInputSchema, 'Inspect sensors and coverage for a location (optional parameter filter)')
       ]
     }));
 
@@ -56,6 +80,14 @@ class EnvironmentMcpServer {
             return await getAirQuality(getAirQualitySchema.parse(args));
           case 'latest_at':
             return await latestAt(latestAtSchema.parse(args));
+          case 'search_locations':
+            return await searchLocationsTool(searchLocationsSchema.parse(args));
+          case 'get_historical_measurements':
+            return await getHistoricalMeasurements(getHistoricalMeasurementsSchema.parse(args));
+          case 'get_averaged_measurements':
+            return await getAveragedMeasurements(getAveragedMeasurementsSchema.parse(args));
+          case 'get_data_availability':
+            return await getDataAvailability(getDataAvailabilitySchema.parse(args));
           default:
             throw new Error(`Unknown tool: ${name}`);
         }

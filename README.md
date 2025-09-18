@@ -34,6 +34,9 @@ A comprehensive monorepo containing six specialized MCP servers for researchers 
 **Air quality monitoring**
 - **OpenAQ v3**: Latest and historical measurements
 - Handles rate limits via X-API-Key headers
+- Location search by parameter, bounding box, or radius with sensor metadata
+- Historical and averaged (hour/day/month/year) time-series retrieval
+- Data availability & sensor coverage inspection per location
 
 ### trade-mcp
 **International trade flows**

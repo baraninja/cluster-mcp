@@ -1,10 +1,21 @@
 import { getJSON, getWithRetry, extractRateLimit, mapRegionCode, type RateLimitInfo } from '@cluster-mcp/core';
 import type { GetAirQualityParams } from '../tools/get_air_quality.js';
 import type { LatestAtParams } from '../tools/latest_at.js';
+import type { SearchLocationsParams } from '../tools/search_locations.js';
 
 const BASE_URL = 'https://api.openaq.org/v3';
 const DEFAULT_LIMIT = 100;
 const MAX_SENSOR_REQUESTS = 5;
+const MAX_RESULTS_PER_SENSOR = 1000;
+const DEFAULT_RADIUS_KM = 50;
+
+const HEALTH_GUIDELINES: Record<string, { limit: number; label: string }> = {
+  pm25: { limit: 15, label: 'WHO 24h guideline (15 µg/m³)' },
+  pm10: { limit: 45, label: 'WHO 24h guideline (45 µg/m³)' },
+  no2: { limit: 25, label: 'WHO 24h guideline (25 µg/m³)' },
+  o3: { limit: 100, label: 'WHO 8h guideline (100 µg/m³)' },
+  so2: { limit: 40, label: 'WHO 24h guideline (40 µg/m³)' }
+};
 
 const PARAMETER_IDS: Record<string, number> = {
   pm10: 1,
@@ -28,6 +39,14 @@ export interface OpenAQLocationMeasurement {
   latitude?: number;
   longitude?: number;
   sourceNames?: string[];
+  sensorId?: number | string;
+  health?: HealthAssessment;
+}
+
+export interface HealthAssessment {
+  status: 'meets_guideline' | 'exceeds_guideline';
+  guideline: string;
+  exceedance?: number;
 }
 
 export interface OpenAQResponse<T = unknown> {
@@ -49,6 +68,48 @@ export interface OpenAQSiteSummary {
   latitude?: number;
   longitude?: number;
   sensors?: { id: number; parameter: string }[];
+}
+
+export interface OpenAQLocationSearchResult {
+  query: SearchLocationsParams;
+  results: OpenAQSiteSummary[];
+  rateLimit?: RateLimitInfo;
+  url: string;
+  meta?: Record<string, unknown>;
+}
+
+export interface HistoricalMeasurementsParams {
+  locationId: number | string;
+  parameter: string;
+  period?: { from?: string; to?: string };
+  limit?: number;
+  sensorLimit?: number;
+}
+
+export interface AveragedMeasurementsParams {
+  locationId: number | string;
+  parameter: string;
+  averaging: 'hours' | 'days' | 'months' | 'years';
+  rollup?: string;
+  period?: { from?: string; to?: string };
+  limit?: number;
+  sensorLimit?: number;
+}
+
+export interface OpenAQAveragedMeasurement {
+  sensorId: number | string;
+  parameter: string;
+  value: number;
+  unit?: string;
+  periodStartUtc?: string;
+  periodEndUtc?: string;
+  locationId?: number | string;
+  location?: string;
+  city?: string;
+  country?: string;
+  coverage?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+  health?: HealthAssessment;
 }
 
 const countryIdCache = new Map<string, number>();
@@ -191,60 +252,83 @@ export async function fetchLatest(
   };
 }
 
+export async function searchLocations(params: SearchLocationsParams): Promise<OpenAQLocationSearchResult> {
+  const isoCountry = params.country ? mapRegionCode(params.country, 'ISO2') ?? params.country : undefined;
+  const searchParams = new URLSearchParams({ limit: String(params.limit ?? 50) });
+
+  if (params.includeSensors ?? true) {
+    searchParams.set('include', 'sensors');
+  }
+
+  if (params.parameter) {
+    const id = PARAMETER_IDS[params.parameter.toLowerCase()];
+    if (id) {
+      searchParams.set('parameters_id', String(id));
+    } else {
+      searchParams.set('parameter', params.parameter);
+    }
+  }
+
+  if (isoCountry) {
+    searchParams.set('country', isoCountry.toUpperCase());
+    const countryId = await getCountryId(isoCountry.toUpperCase());
+    if (countryId) {
+      searchParams.set('countries_id', String(countryId));
+    }
+  }
+
+  if (params.city) {
+    searchParams.set('city', params.city);
+  }
+
+  if (params.bbox) {
+    const { west, south, east, north } = params.bbox;
+    searchParams.set('bbox', `${west},${south},${east},${north}`);
+  }
+
+  if (params.coordinates) {
+    const { latitude, longitude, radiusKm } = params.coordinates;
+    searchParams.set('coordinates', `${latitude},${longitude}`);
+    if (radiusKm) {
+      const meters = Math.round(Math.min(Math.max(radiusKm, 0.1), 25) * 1000);
+      searchParams.set('radius', String(meters));
+    }
+  }
+
+  const response = await request('locations', searchParams);
+  const rows = Array.isArray(response.json?.results) ? response.json.results : [];
+  const mapped = rows.map((item: any) => mapLocation(item));
+
+  return {
+    query: params,
+    results: mapped,
+    rateLimit: response.rateLimit,
+    url: response.url,
+    meta: response.json?.meta
+  };
+}
+
 export async function suggestLocations(options: {
   city?: string;
   country?: string;
   parameter?: string;
 }): Promise<OpenAQSiteSummary[]> {
-  const search = new URLSearchParams({ limit: '50' });
-  search.set('include', 'sensors');
-  if (options.city) search.set('city', options.city);
-  if (options.parameter) {
-    const id = PARAMETER_IDS[options.parameter.toLowerCase()];
-    if (id) {
-      search.set('parameters_id', String(id));
-    } else {
-      search.set('parameter', options.parameter);
-    }
+  const result = await searchLocations({
+    city: options.city,
+    country: options.country,
+    parameter: options.parameter,
+    includeSensors: true,
+    limit: 50
+  });
+
+  if (!options.country) {
+    return result.results;
   }
 
-  if (options.country) {
-    const iso2 = options.country.toUpperCase();
-    const countryId = await getCountryId(iso2);
-    if (countryId) {
-      search.set('countries_id', String(countryId));
-    }
-  }
-
-  const response = await request('locations', search);
-  if (!Array.isArray(response.json?.results)) return [];
-
-  const isoFilter = options.country ? options.country.toUpperCase() : undefined;
-
-  const mapped = response.json.results.map((item: any) => ({
-    locationId: item.id ?? item.locationId ?? item.location,
-    location: item.name ?? item.location,
-    city: item.city,
-    country: typeof item.country === 'string' ? item.country : item.country?.name ?? item.country?.code,
-    countryCode: typeof item.country === 'string' ? item.country : item.country?.code,
-    parameters: Array.isArray(item.parameters)
-      ? item.parameters.map((p: any) => p.parameter?.name ?? p.parameter ?? p)
-      : undefined,
-    latitude: item.coordinates?.latitude,
-    longitude: item.coordinates?.longitude,
-    sensors: Array.isArray(item.sensors)
-      ? item.sensors.map((sensor: any) => ({
-          id: sensor.id,
-          parameter: sensor.parameter?.name ?? sensor.parameter ?? 'unknown'
-        }))
-      : undefined
-  }));
-
-  return isoFilter
-    ? mapped.filter((location: OpenAQSiteSummary) =>
-        location.countryCode?.toUpperCase() === isoFilter || location.country?.toUpperCase() === isoFilter
-      )
-    : mapped;
+  const isoFilter = options.country.toUpperCase();
+  return result.results.filter((location) =>
+    location.countryCode?.toUpperCase() === isoFilter || location.country?.toUpperCase() === isoFilter
+  );
 }
 
 interface RequestResult {
@@ -277,6 +361,344 @@ async function fetchLocationSensors(locationId: number | string): Promise<Array<
       parameter: row.parameter?.name ?? row.parameter?.id ?? row.parameter ?? 'unknown'
     }))
     .filter((sensor: { id: number | string; parameter: string }) => typeof sensor.id === 'number' || typeof sensor.id === 'string');
+}
+
+async function fetchLocationSummary(locationId: number | string): Promise<OpenAQSiteSummary | undefined> {
+  const response = await request(`locations/${encodeURIComponent(locationId)}`);
+  const payload = response.json?.results ?? response.json;
+  if (Array.isArray(payload) && payload.length > 0) {
+    return mapLocation(payload[0]);
+  }
+  if (payload && typeof payload === 'object') {
+    return mapLocation(payload);
+  }
+  return undefined;
+}
+
+function findSensorsForParameter(
+  sensors: Array<{ id: number; parameter: string }>,
+  parameter: string,
+  limit?: number
+): Array<{ id: number; parameter: string }> {
+  const target = parameter.toLowerCase();
+  const matches = sensors.filter((sensor) => sensor.parameter?.toLowerCase() === target);
+  if (matches.length === 0) {
+    return [];
+  }
+  if (limit && limit > 0) {
+    return matches.slice(0, limit);
+  }
+  return matches;
+}
+
+function buildHistoricalSearch(
+  period: HistoricalMeasurementsParams['period'],
+  limit: number
+): URLSearchParams {
+  const cappedLimit = Math.min(Math.max(limit, 1), 1000);
+  const search = new URLSearchParams({ limit: String(cappedLimit) });
+  if (period?.from) {
+    search.set('date_from', normaliseDate(period.from, 'start'));
+  }
+  if (period?.to) {
+    search.set('date_to', normaliseDate(period.to, 'end'));
+  }
+  return search;
+}
+
+function buildAveragedSearch(
+  period: AveragedMeasurementsParams['period'],
+  limit: number,
+  rollup?: string
+): URLSearchParams {
+  const cappedLimit = Math.min(Math.max(limit, 1), 1000);
+  const search = new URLSearchParams({ limit: String(cappedLimit) });
+  if (period?.from) {
+    search.set('date_from', normaliseDate(period.from, 'start'));
+  }
+  if (period?.to) {
+    search.set('date_to', normaliseDate(period.to, 'end'));
+  }
+  if (rollup) {
+    search.set('rollup', rollup);
+  }
+  return search;
+}
+
+export async function fetchHistoricalMeasurements(
+  params: HistoricalMeasurementsParams
+): Promise<OpenAQResponse<OpenAQLocationMeasurement>> {
+  const sensors = await fetchLocationSensors(params.locationId);
+  const locationSummary = await fetchLocationSummary(params.locationId).catch(() => undefined);
+  const matches = findSensorsForParameter(
+    sensors,
+    params.parameter,
+    params.sensorLimit ?? MAX_SENSOR_REQUESTS
+  );
+
+  if (matches.length === 0) {
+    const suggestions = await suggestNearbyLocations(params.parameter, locationSummary);
+    return {
+      meta: {
+        message: `No sensors measuring ${params.parameter} for location ${params.locationId}`,
+        location: locationSummary,
+        suggestions
+      },
+      results: [],
+      rateLimit: undefined,
+      url: '',
+      suggestions
+    };
+  }
+
+  const perSensorLimit = Math.min(
+    Math.max(Math.ceil((params.limit ?? DEFAULT_LIMIT) / matches.length), 1),
+    MAX_RESULTS_PER_SENSOR
+  );
+  const totalLimit = Math.min(params.limit ?? DEFAULT_LIMIT, perSensorLimit * matches.length);
+  const searchTemplate = buildHistoricalSearch(params.period, perSensorLimit);
+
+  const results: OpenAQLocationMeasurement[] = [];
+  let lastRateLimit: RateLimitInfo | undefined;
+  const sensorMeta: Array<{ sensorId: number | string; parameter: string }> = [];
+  let lastUrl = '';
+
+  for (const sensor of matches) {
+    const response = await request(
+      `sensors/${sensor.id}/measurements`,
+      new URLSearchParams(searchTemplate)
+    );
+    lastRateLimit = response.rateLimit;
+    lastUrl = response.url;
+    sensorMeta.push({ sensorId: sensor.id, parameter: sensor.parameter });
+    const rows = Array.isArray(response.json?.results) ? response.json.results : [];
+
+    for (const row of rows) {
+      const measurement = normaliseMeasurement(row);
+      measurement.sensorId = sensor.id;
+      if (!measurement.location && locationSummary?.location) {
+        measurement.location = locationSummary.location;
+      }
+      if (!measurement.city && locationSummary?.city) {
+        measurement.city = locationSummary.city;
+      }
+      if (!measurement.country && locationSummary?.country) {
+        measurement.country = locationSummary.country;
+      }
+      if (!measurement.locationId) {
+        measurement.locationId = params.locationId;
+      }
+      results.push(measurement);
+      if (results.length >= totalLimit) break;
+    }
+
+    if (results.length >= totalLimit) break;
+  }
+
+  results.sort((a, b) => {
+    const aDate = a.dateUtc ? Date.parse(a.dateUtc) : 0;
+    const bDate = b.dateUtc ? Date.parse(b.dateUtc) : 0;
+    return aDate - bDate;
+  });
+
+  if (results.length === 0) {
+    const suggestions = await suggestNearbyLocations(params.parameter, locationSummary);
+    return {
+      meta: {
+        message: 'No measurements returned for specified period',
+        location: locationSummary,
+        sensorsQueried: sensorMeta,
+        suggestions
+      },
+      results,
+      rateLimit: lastRateLimit,
+      url: lastUrl,
+      suggestions
+    };
+  }
+
+  return {
+    meta: {
+      sensorsQueried: sensorMeta,
+      location: locationSummary
+    },
+    results,
+    rateLimit: lastRateLimit,
+    url: lastUrl,
+    suggestions: []
+  };
+}
+
+export async function fetchAveragedMeasurements(
+  params: AveragedMeasurementsParams
+): Promise<OpenAQResponse<OpenAQAveragedMeasurement>> {
+  const sensors = await fetchLocationSensors(params.locationId);
+  const locationSummary = await fetchLocationSummary(params.locationId).catch(() => undefined);
+  const matches = findSensorsForParameter(
+    sensors,
+    params.parameter,
+    params.sensorLimit ?? MAX_SENSOR_REQUESTS
+  );
+
+  if (matches.length === 0) {
+    const suggestions = await suggestNearbyLocations(params.parameter, locationSummary);
+    return {
+      meta: {
+        message: `No sensors measuring ${params.parameter} for location ${params.locationId}`,
+        location: locationSummary,
+        suggestions
+      },
+      results: [],
+      rateLimit: undefined,
+      url: '',
+      suggestions
+    };
+  }
+
+  const averagingPath: Record<string, string> = {
+    hours: 'hours',
+    days: 'days',
+    months: 'months',
+    years: 'years'
+  };
+
+  const path = averagingPath[params.averaging];
+  if (!path) {
+    throw new Error(`Unsupported averaging interval: ${params.averaging}`);
+  }
+
+  const perSensorLimit = Math.min(
+    Math.max(Math.ceil((params.limit ?? DEFAULT_LIMIT) / matches.length), 1),
+    1000
+  );
+  const totalLimit = Math.min(params.limit ?? DEFAULT_LIMIT, perSensorLimit * matches.length);
+  const searchTemplate = buildAveragedSearch(params.period, perSensorLimit, params.rollup);
+  const results: OpenAQAveragedMeasurement[] = [];
+  let lastRateLimit: RateLimitInfo | undefined;
+  let lastUrl = '';
+  const sensorMeta: Array<{ sensorId: number | string; parameter: string }> = [];
+
+  for (const sensor of matches) {
+    const response = await request(
+      `sensors/${sensor.id}/${path}`,
+      new URLSearchParams(searchTemplate)
+    );
+    lastRateLimit = response.rateLimit;
+    lastUrl = response.url;
+    sensorMeta.push({ sensorId: sensor.id, parameter: sensor.parameter });
+    const rows = Array.isArray(response.json?.results) ? response.json.results : [];
+
+    for (const row of rows) {
+      const value = Number(
+        row.value ?? row.average ?? row.avg ?? row.mean ?? row.measurement ?? row.aggregate
+      );
+      if (!Number.isFinite(value)) continue;
+
+      const periodStart = row.period?.from ?? row.datetime ?? row.dateFrom ?? row.date ?? row.from;
+      const periodEnd = row.period?.to ?? row.dateTo ?? row.to;
+
+      const health = evaluateHealth(params.parameter, value);
+      results.push({
+        sensorId: sensor.id,
+        parameter: params.parameter,
+        value,
+        unit: row.unit ?? row.parameter?.units,
+        periodStartUtc: periodStart ? String(periodStart) : undefined,
+        periodEndUtc: periodEnd ? String(periodEnd) : undefined,
+        locationId: locationSummary?.locationId ?? params.locationId,
+        location: locationSummary?.location,
+        city: locationSummary?.city,
+        country: locationSummary?.country,
+        coverage: row.coverage,
+        meta: row.statistics ?? row.stats ?? row.metadata,
+        health
+      });
+
+      if (results.length >= totalLimit) break;
+    }
+
+    if (results.length >= totalLimit) break;
+  }
+
+  results.sort((a, b) => {
+    const aDate = a.periodStartUtc ? Date.parse(a.periodStartUtc) : 0;
+    const bDate = b.periodStartUtc ? Date.parse(b.periodStartUtc) : 0;
+    return aDate - bDate;
+  });
+
+  if (results.length === 0) {
+    const suggestions = await suggestNearbyLocations(params.parameter, locationSummary);
+    return {
+      meta: {
+        message: 'No averaged measurements available for specified period',
+        sensorsQueried: sensorMeta,
+        location: locationSummary,
+        averaging: params.averaging,
+        rollup: params.rollup,
+        suggestions
+      },
+      results,
+      rateLimit: lastRateLimit,
+      url: lastUrl,
+      suggestions
+    };
+  }
+
+  return {
+    meta: {
+      sensorsQueried: sensorMeta,
+      location: locationSummary,
+      averaging: params.averaging,
+      rollup: params.rollup
+    },
+    results,
+    rateLimit: lastRateLimit,
+    url: lastUrl,
+    suggestions: []
+  };
+}
+
+export async function fetchDataAvailability(
+  locationId: number | string,
+  parameter?: string
+): Promise<{
+  location?: OpenAQSiteSummary;
+  sensors: Array<{
+    sensorId: number | string;
+    parameter: string;
+    firstSeen?: string;
+    lastSeen?: string;
+    measurementCount?: number;
+    coverage?: Record<string, unknown>;
+  }>;
+  url: string;
+  rateLimit?: RateLimitInfo;
+}> {
+  const summary = await fetchLocationSummary(locationId).catch(() => undefined);
+  const response = await request(`locations/${encodeURIComponent(locationId)}/sensors`, new URLSearchParams({ limit: '200' }));
+  const rows = Array.isArray(response.json?.results) ? response.json.results : [];
+  const targetParam = parameter?.toLowerCase();
+
+  const sensors = rows
+    .map((sensor: any) => {
+      const paramName = sensor.parameter?.name ?? sensor.parameter?.id ?? sensor.parameter ?? 'unknown';
+      return {
+        sensorId: sensor.id,
+        parameter: paramName,
+        firstSeen: sensor.datetimeFirst ?? sensor.firstSeen ?? sensor.startDate,
+        lastSeen: sensor.datetimeLast ?? sensor.lastSeen ?? sensor.endDate,
+        measurementCount: sensor.count ?? sensor.measurementsCount ?? sensor.total,
+        coverage: sensor.coverage
+      };
+    })
+    .filter((sensor: { parameter: string }) => (targetParam ? sensor.parameter.toLowerCase() === targetParam : true));
+
+  return {
+    location: summary,
+    sensors,
+    url: response.url,
+    rateLimit: response.rateLimit
+  };
 }
 
 async function fetchDirectMeasurements(
@@ -322,12 +744,21 @@ async function fetchDirectMeasurements(
   let results = filtered.slice(0, DEFAULT_LIMIT);
 
   if (isoFilter && results.length === 0) {
+    const alternatives = await searchLocations({
+      parameter,
+      country: iso2,
+      includeSensors: false,
+      limit: 20
+    });
     return {
-      meta: { message: `No measurements returned for ISO2=${isoFilter}` },
+      meta: {
+        message: `No measurements returned for ISO2=${isoFilter}`,
+        suggestions: alternatives.results
+      },
       results: [],
       rateLimit: response.rateLimit,
       url: response.url,
-      suggestions: []
+      suggestions: alternatives.results
     };
   }
 
@@ -366,14 +797,15 @@ async function request(path: string, searchParams?: URLSearchParams): Promise<Re
     }
   }
 
-  const headers: Record<string, string> = {
-    Accept: 'application/json'
-  };
-
   const apiKey = process.env.OPENAQ_API_KEY;
-  if (apiKey) {
-    headers['X-API-Key'] = apiKey;
+  if (!apiKey) {
+    throw new Error('OPENAQ_API_KEY is required to use environment-mcp');
   }
+
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'X-API-Key': apiKey
+  };
 
   try {
     const { json, headers: responseHeaders, rateLimit } = await getWithRetry(() => getJSON(url.toString(), headers));
@@ -421,7 +853,29 @@ function normaliseMeasurement(raw: any): OpenAQLocationMeasurement {
     dateUtc: date ? String(date) : undefined,
     latitude: typeof coordinates.latitude === 'number' ? coordinates.latitude : undefined,
     longitude: typeof coordinates.longitude === 'number' ? coordinates.longitude : undefined,
-    sourceNames
+    sourceNames,
+    health: evaluateHealth(parameter, Number(raw.value))
+  };
+}
+
+function mapLocation(item: any): OpenAQSiteSummary {
+  return {
+    locationId: item.id ?? item.locationId ?? item.location,
+    location: item.name ?? item.location,
+    city: item.city,
+    country: typeof item.country === 'string' ? item.country : item.country?.name ?? item.country?.code,
+    countryCode: typeof item.country === 'string' ? item.country : item.country?.code,
+    parameters: Array.isArray(item.parameters)
+      ? item.parameters.map((p: any) => p.parameter?.name ?? p.parameter ?? p)
+      : undefined,
+    latitude: item.coordinates?.latitude,
+    longitude: item.coordinates?.longitude,
+    sensors: Array.isArray(item.sensors)
+      ? item.sensors.map((sensor: any) => ({
+          id: sensor.id,
+          parameter: sensor.parameter?.name ?? sensor.parameter ?? 'unknown'
+        }))
+      : undefined
   };
 }
 
@@ -432,4 +886,57 @@ function normaliseDate(value: string, boundary: 'start' | 'end'): string {
     return `${value}T00:00:00Z`;
   }
   return `${value}T23:59:59Z`;
+}
+
+function evaluateHealth(parameter: string, value: number): HealthAssessment | undefined {
+  if (!Number.isFinite(value)) return undefined;
+  const guideline = HEALTH_GUIDELINES[parameter.toLowerCase()];
+  if (!guideline) return undefined;
+  if (value <= guideline.limit) {
+    return {
+      status: 'meets_guideline',
+      guideline: guideline.label
+    };
+  }
+  return {
+    status: 'exceeds_guideline',
+    guideline: guideline.label,
+    exceedance: Number((value - guideline.limit).toFixed(2))
+  };
+}
+
+async function suggestNearbyLocations(
+  parameter: string,
+  reference: OpenAQSiteSummary | undefined,
+  radiusKm = DEFAULT_RADIUS_KM
+): Promise<OpenAQSiteSummary[]> {
+  if (!reference?.latitude || !reference.longitude) {
+    if (reference?.country) {
+      const countrySearch = await searchLocations({
+        parameter,
+        country: reference.country,
+        includeSensors: false,
+        limit: 10
+      });
+      return countrySearch.results;
+    }
+    return [];
+  }
+
+  const search = await searchLocations({
+    parameter,
+    coordinates: {
+      latitude: reference.latitude,
+      longitude: reference.longitude,
+      radiusKm
+    },
+    includeSensors: false,
+    limit: 10
+  });
+
+  if (!reference.locationId) {
+    return search.results;
+  }
+
+  return search.results.filter((item) => item.locationId !== reference.locationId);
 }

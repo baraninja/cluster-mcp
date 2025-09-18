@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "tools": [
     { "name": "get_air_quality", "description": "Retrieve air quality measurements for a region" },
-    { "name": "latest_at", "description": "Get the latest measurements for a specific location" }
+    { "name": "latest_at", "description": "Get the latest measurements for a specific location" },
+    { "name": "search_locations", "description": "Search locations by parameter, bounding box, or radius" },
+    { "name": "get_historical_measurements", "description": "Retrieve historical measurements for a location and parameter" },
+    { "name": "get_averaged_measurements", "description": "Retrieve averaged measurements (hours/days/months/years)" },
+    { "name": "get_data_availability", "description": "Inspect sensors and coverage for a location" }
   ]
 }
