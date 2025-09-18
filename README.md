@@ -37,6 +37,8 @@ A comprehensive monorepo containing six specialized MCP servers for researchers 
 - Location search by parameter, bounding box, or radius with sensor metadata
 - Historical and averaged (hour/day/month/year) time-series retrieval
 - Data availability & sensor coverage inspection per location
+- Country IDs sourced from OpenAQ catalogue (run `node scripts/fetch-openaq-countries.mjs` when syncing)
+- Tip: use coordinates + radius when targeting a specific city/district (e.g. Oslo) because many OpenAQ feeds omit the city name; reserve the country code option for national lists.
 
 ### trade-mcp
 **International trade flows**

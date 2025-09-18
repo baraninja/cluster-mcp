@@ -3,11 +3,11 @@
   "description": "Air quality monitoring from OpenAQ v3",
   "version": "0.1.0",
   "tools": [
-    { "name": "get_air_quality", "description": "Retrieve air quality measurements for a region" },
-    { "name": "latest_at", "description": "Get the latest measurements for a specific location" },
-    { "name": "search_locations", "description": "Search locations by parameter, bounding box, or radius" },
-    { "name": "get_historical_measurements", "description": "Retrieve historical measurements for a location and parameter" },
-    { "name": "get_averaged_measurements", "description": "Retrieve averaged measurements (hours/days/months/years)" },
-    { "name": "get_data_availability", "description": "Inspect sensors and coverage for a location" }
+    { "name": "get_air_quality", "description": "Quick recent measurements with health guideline flags (auto-selects sensors)." },
+    { "name": "latest_at", "description": "Direct /locations/{id}/latest fetch for a known station." },
+    { "name": "search_locations", "description": "Find stations by country or coordinates; prefer coordinates+radius (≤25 km) for specific cities because many OpenAQ feeds omit city names." },
+    { "name": "get_historical_measurements", "description": "Time series from sensors/{id}/measurements with ISO date filters." },
+    { "name": "get_averaged_measurements", "description": "Averaged hours/days/months/years with optional rollup and coverage." },
+    { "name": "get_data_availability", "description": "List sensors, first/last observations, counts for a location." }
   ]
 }

@@ -62,12 +62,36 @@ class EnvironmentMcpServer {
   private registerHandlers() {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
-        this.describeTool('get_air_quality', getAirQualityInputSchema, 'Retrieve air quality measurements for a region'),
-        this.describeTool('latest_at', latestAtInputSchema, 'Get the latest measurements for a specific location'),
-        this.describeTool('search_locations', searchLocationsInputSchema, 'Search OpenAQ locations by parameter, bounding box, or radius'),
-        this.describeTool('get_historical_measurements', getHistoricalMeasurementsInputSchema, 'Retrieve historical measurements for a location and parameter'),
-        this.describeTool('get_averaged_measurements', getAveragedMeasurementsInputSchema, 'Retrieve averaged (hours/days/months/years) measurements for a location and parameter'),
-        this.describeTool('get_data_availability', getDataAvailabilityInputSchema, 'Inspect sensors and coverage for a location (optional parameter filter)')
+        this.describeTool(
+          'get_air_quality',
+          getAirQualityInputSchema,
+          'STEP 2 – Fast status check with WHO health flags. Auto-selects sensors, so you lose station control. Prioritise parameters: pm25 (most health-relevant), no2 (traffic), o3 (secondary pollution).'
+        ),
+        this.describeTool(
+          'latest_at',
+          latestAtInputSchema,
+          'Direct /locations/{id}/latest call. Supply a known locationId to fetch the provider’s newest values verbatim.'
+        ),
+        this.describeTool(
+          'search_locations',
+          searchLocationsInputSchema,
+          'STEP 1 – Find candidate stations. For national lists, use ISO country codes; for specific cities, prefer coordinates+radius (≤25 km) or a bbox because many feeds omit city names. Response includes suggestions if few stations (<5) are found.'
+        ),
+        this.describeTool(
+          'get_historical_measurements',
+          getHistoricalMeasurementsInputSchema,
+          'STEP 3a – Retrieve raw time series via sensors/{id}/measurements with ISO dates (YYYY-MM-DD). Includes WHO health assessment and nearby suggestions when data is missing.'
+        ),
+        this.describeTool(
+          'get_averaged_measurements',
+          getAveragedMeasurementsInputSchema,
+          'STEP 3b – Aggregated series via sensors/{id}/hours|days|months|years (rollup optional). Includes coverage stats and WHO guideline comparison per point.'
+        ),
+        this.describeTool(
+          'get_data_availability',
+          getDataAvailabilityInputSchema,
+          'STEP 2b – Inspect sensors before large pulls. Lists parameters, first/last observation timestamps, counts and coverage so you can choose comparable station types (urban background vs traffic).'
+        )
       ]
     }));
 

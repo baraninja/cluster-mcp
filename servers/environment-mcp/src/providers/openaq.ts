@@ -1,13 +1,36 @@
-import { getJSON, getWithRetry, extractRateLimit, mapRegionCode, type RateLimitInfo } from '@cluster-mcp/core';
+import {
+  getJSON,
+  getWithRetry,
+  extractRateLimit,
+  mapRegionCode,
+  getCountry,
+  type RateLimitInfo
+} from '@cluster-mcp/core';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import type { GetAirQualityParams } from '../tools/get_air_quality.js';
 import type { LatestAtParams } from '../tools/latest_at.js';
 import type { SearchLocationsParams } from '../tools/search_locations.js';
+
 
 const BASE_URL = 'https://api.openaq.org/v3';
 const DEFAULT_LIMIT = 100;
 const MAX_SENSOR_REQUESTS = 5;
 const MAX_RESULTS_PER_SENSOR = 1000;
 const DEFAULT_RADIUS_KM = 50;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const COUNTRIES_DATA_PATH = path.resolve(__dirname, '..', 'data', 'openaq_countries.json');
+const openAqCountries = JSON.parse(readFileSync(COUNTRIES_DATA_PATH, 'utf8')) as {
+  countries?: Record<string, any>;
+  reverse?: Record<string, any>;
+};
+
+type OpenAQCountryEntry = { id: number; code: string; name: string };
+const OPENAQ_COUNTRIES: Record<string, OpenAQCountryEntry> = (openAqCountries?.countries ?? {}) as Record<string, OpenAQCountryEntry>;
+const OPENAQ_COUNTRIES_BY_ID: Record<number, OpenAQCountryEntry> = (openAqCountries?.reverse ?? {}) as Record<number, OpenAQCountryEntry>;
 
 const HEALTH_GUIDELINES: Record<string, { limit: number; label: string }> = {
   pm25: { limit: 15, label: 'WHO 24h guideline (15 µg/m³)' },
@@ -26,6 +49,40 @@ const PARAMETER_IDS: Record<string, number> = {
   so2: 6,
   pm1: 19
 };
+
+function getOpenAQCountryInfo(code?: string): OpenAQCountryEntry | undefined {
+  if (!code) return undefined;
+  const trimmed = code.trim();
+  if (!trimmed) return undefined;
+
+  const iso2 = mapRegionCode(trimmed, 'ISO2');
+  if (iso2) {
+    const match = OPENAQ_COUNTRIES[iso2.toUpperCase()];
+    if (match) return match;
+  }
+
+  const direct = OPENAQ_COUNTRIES[trimmed.toUpperCase()];
+  if (direct) return direct;
+
+  const iso3 = mapRegionCode(trimmed, 'ISO3');
+  if (iso3) {
+    const match = OPENAQ_COUNTRIES[iso3.toUpperCase()];
+    if (match) return match;
+  }
+
+  const byName = Object.values(OPENAQ_COUNTRIES).find((entry) => entry.name.toUpperCase() === trimmed.toUpperCase());
+  if (byName) return byName;
+
+  const country = getCountry(trimmed);
+  if (country) {
+    const mapped = OPENAQ_COUNTRIES[country.iso2.toUpperCase()] ?? OPENAQ_COUNTRIES[country.iso3.toUpperCase()];
+    if (mapped) return mapped;
+    const byOfficialName = Object.values(OPENAQ_COUNTRIES).find((entry) => entry.name.toUpperCase() === country.name.toUpperCase());
+    if (byOfficialName) return byOfficialName;
+  }
+
+  return undefined;
+}
 
 export interface OpenAQLocationMeasurement {
   locationId: number | string;
@@ -254,59 +311,198 @@ export async function fetchLatest(
 
 export async function searchLocations(params: SearchLocationsParams): Promise<OpenAQLocationSearchResult> {
   const isoCountry = params.country ? mapRegionCode(params.country, 'ISO2') ?? params.country : undefined;
-  const searchParams = new URLSearchParams({ limit: String(params.limit ?? 50) });
+  const requestLimit = Math.min(params.limit ?? 50, 1000);
+  const maxPages = 5;
+  const baseParams = new URLSearchParams({ limit: String(requestLimit) });
+  const countryInfo = getOpenAQCountryInfo(isoCountry ?? params.country);
 
   if (params.includeSensors ?? true) {
-    searchParams.set('include', 'sensors');
+    baseParams.set('include', 'sensors');
   }
 
   if (params.parameter) {
     const id = PARAMETER_IDS[params.parameter.toLowerCase()];
     if (id) {
-      searchParams.set('parameters_id', String(id));
+      baseParams.set('parameters_id', String(id));
     } else {
-      searchParams.set('parameter', params.parameter);
+      baseParams.set('parameter', params.parameter);
     }
   }
 
   if (isoCountry) {
-    searchParams.set('country', isoCountry.toUpperCase());
-    const countryId = await getCountryId(isoCountry.toUpperCase());
-    if (countryId) {
-      searchParams.set('countries_id', String(countryId));
+    const isoUpper = isoCountry.toUpperCase();
+    baseParams.set('country', isoUpper);
+    if (countryInfo) {
+      baseParams.set('countries_id', String(countryInfo.id));
+    } else {
+      const fallbackId = await getCountryId(isoUpper);
+      if (fallbackId) {
+        baseParams.set('countries_id', String(fallbackId));
+      }
     }
+  } else if (countryInfo) {
+    baseParams.set('countries_id', String(countryInfo.id));
   }
 
   if (params.city) {
-    searchParams.set('city', params.city);
+    baseParams.set('city', params.city);
   }
 
   if (params.bbox) {
     const { west, south, east, north } = params.bbox;
-    searchParams.set('bbox', `${west},${south},${east},${north}`);
+    baseParams.set('bbox', `${west},${south},${east},${north}`);
   }
 
   if (params.coordinates) {
     const { latitude, longitude, radiusKm } = params.coordinates;
-    searchParams.set('coordinates', `${latitude},${longitude}`);
+    baseParams.set('coordinates', `${latitude},${longitude}`);
     if (radiusKm) {
       const meters = Math.round(Math.min(Math.max(radiusKm, 0.1), 25) * 1000);
-      searchParams.set('radius', String(meters));
+      baseParams.set('radius', String(meters));
     }
   }
 
-  const response = await request('locations', searchParams);
-  const rows = Array.isArray(response.json?.results) ? response.json.results : [];
-  const mapped = rows.map((item: any) => mapLocation(item));
+  const collected: Record<string | number, OpenAQSiteSummary> = {};
+  const candidateSamples: OpenAQSiteSummary[] = [];
+  const metadataFilters: Record<string, unknown> = {};
+  let totalRaw = 0;
+  let lastRateLimit: RateLimitInfo | undefined;
+  let lastUrl = '';
+  let pagesFetched = 0;
+  let apiMeta: Record<string, unknown> | undefined;
+
+  for (let page = 1; page <= maxPages; page++) {
+    if (Object.keys(collected).length >= requestLimit) break;
+
+    const searchParams = new URLSearchParams(baseParams);
+    searchParams.set('page', String(page));
+    const response = await request('locations', searchParams);
+    lastRateLimit = response.rateLimit;
+    lastUrl = response.url;
+    apiMeta = response.json?.meta ?? apiMeta;
+    pagesFetched += 1;
+
+    const rows = Array.isArray(response.json?.results) ? response.json.results : [];
+    totalRaw += rows.length;
+
+    if (candidateSamples.length < 10) {
+      for (const item of rows) {
+        candidateSamples.push(mapLocation(item));
+        if (candidateSamples.length >= 10) break;
+      }
+    }
+
+    let filtered = rows.map((item: any) => mapLocation(item));
+
+    if (isoCountry || params.country) {
+      const tokens = new Set<string>();
+      const addToken = (value?: string) => {
+        if (!value) return;
+        const trimmed = value.trim();
+        if (!trimmed) return;
+        tokens.add(trimmed.toUpperCase());
+        const iso2Token = mapRegionCode(trimmed, 'ISO2');
+        if (iso2Token) tokens.add(iso2Token.toUpperCase());
+        const iso3Token = mapRegionCode(trimmed, 'ISO3');
+        if (iso3Token) tokens.add(iso3Token.toUpperCase());
+        const info =
+          getCountry(trimmed) ||
+          (iso3Token ? getCountry(iso3Token) : undefined) ||
+          (iso2Token ? getCountry(iso2Token) : undefined);
+        if (info?.name) {
+          tokens.add(info.name.toUpperCase());
+          tokens.add(info.iso2.toUpperCase());
+          tokens.add(info.iso3.toUpperCase());
+        }
+      };
+
+      addToken(isoCountry ?? undefined);
+      addToken(params.country ?? undefined);
+      if (countryInfo) {
+        addToken(countryInfo.code);
+        addToken(countryInfo.name);
+      }
+
+      filtered = filtered.filter((location: OpenAQSiteSummary) => {
+        const candidates: string[] = [];
+        if (location.countryCode) candidates.push(String(location.countryCode));
+        if (location.country) candidates.push(String(location.country));
+
+        for (const candidate of candidates) {
+          const upper = candidate.toUpperCase();
+          if (tokens.has(upper)) return true;
+          const iso2 = mapRegionCode(candidate, 'ISO2');
+          if (iso2 && tokens.has(iso2.toUpperCase())) return true;
+          const iso3 = mapRegionCode(candidate, 'ISO3');
+          if (iso3 && tokens.has(iso3.toUpperCase())) return true;
+          const info = getCountry(candidate);
+          if (info) {
+            if (
+              tokens.has(info.iso2.toUpperCase()) ||
+              tokens.has(info.iso3.toUpperCase()) ||
+              tokens.has(info.name.toUpperCase())
+            ) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      });
+
+      metadataFilters.countryTokens = Array.from(tokens);
+      metadataFilters.countryCandidates = candidateSamples.map((location: OpenAQSiteSummary) => ({
+        locationId: location.locationId,
+        country: location.country,
+        countryCode: location.countryCode
+      }));
+    }
+
+    if (params.city) {
+      const cityNeedle = params.city.trim().toLowerCase();
+      const exactMatches = filtered.filter((location: OpenAQSiteSummary) => location.city?.toLowerCase() === cityNeedle);
+      if (exactMatches.length > 0) {
+        filtered = exactMatches;
+      } else {
+        filtered = filtered.filter((location: OpenAQSiteSummary) =>
+          location.city?.toLowerCase().includes(cityNeedle)
+        );
+      }
+      metadataFilters.cityExactMatch = exactMatches.length > 0;
+      metadataFilters.cityQuery = cityNeedle;
+    }
+
+    for (const location of filtered) {
+      if (collected[location.locationId]) continue;
+      collected[location.locationId] = location;
+      if (Object.keys(collected).length >= requestLimit) break;
+    }
+
+    if (rows.length < requestLimit) {
+      break;
+    }
+  }
+
+  const finalResults = Object.values(collected).slice(0, requestLimit);
 
   return {
     query: params,
-    results: mapped,
-    rateLimit: response.rateLimit,
-    url: response.url,
-    meta: response.json?.meta
+    results: finalResults,
+    rateLimit: lastRateLimit,
+    url: lastUrl,
+    meta: {
+      ...apiMeta,
+      totalFound: totalRaw,
+      filteredCount: finalResults.length,
+      pagesFetched,
+      filters: {
+        ...metadataFilters,
+        countryMapping: countryInfo ? { id: countryInfo.id, code: countryInfo.code, name: countryInfo.name } : null
+      }
+    }
   };
 }
+
 
 export async function suggestLocations(options: {
   city?: string;
@@ -777,6 +973,11 @@ async function fetchDirectMeasurements(
 
 async function getCountryId(iso2: string): Promise<number | undefined> {
   const key = iso2.toUpperCase();
+  const mapped = getOpenAQCountryInfo(key);
+  if (mapped) {
+    countryIdCache.set(key, mapped.id);
+    return mapped.id;
+  }
   if (countryIdCache.has(key)) return countryIdCache.get(key);
   const response = await request('countries', new URLSearchParams({ code: key }));
   const id = response.json?.results?.[0]?.id;
