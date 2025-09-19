@@ -88,7 +88,7 @@ Add to your `claude_desktop_config.json`:
       "args": ["/path/to/cluster-mcp/servers/trade-mcp/dist/server.js"],
       "env": {
         "COMTRADE_API_KEY": "your-comtrade-key",
-        "COMTRADE_BASE_URL": "https://comtradeapi.un.org/ga/" 
+        "COMTRADE_BASE_URL": "https://comtradeapi.un.org/data/v1/" 
       }
     }
   }
@@ -196,7 +196,7 @@ cluster-mcp/
 CONTACT_EMAIL=your.email@domain.com
 OPENAQ_API_KEY=your-openaq-key
 COMTRADE_API_KEY=your-comtrade-key
-COMTRADE_BASE_URL=https://comtradeapi.un.org/ga/
+COMTRADE_BASE_URL=https://comtradeapi.un.org/data/v1/
 
 # Optional: Cache database path (defaults to in-memory)
 CLUSTER_MCP_CACHE_PATH=./cache.db

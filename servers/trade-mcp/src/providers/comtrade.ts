@@ -10,7 +10,7 @@ import type { SearchHsCodeParams } from '../tools/search_hs_code.js';
 import { searchHsCatalog } from '../comtrade_catalog.js';
 
 const LEGACY_BASE = 'https://comtrade.un.org/api/get';
-const DEFAULT_APIM_BASE = (process.env.COMTRADE_BASE_URL || 'https://comtradeapi.un.org/ga/').replace(/\/+$/, '/');
+const DEFAULT_APIM_BASE = (process.env.COMTRADE_BASE_URL || 'https://comtradeapi.un.org/data/v1/').replace(/\/+$/, '/');
 const APIM_KEY_HEADER = 'Ocp-Apim-Subscription-Key';
 
 const KEYWORD_PRESETS: Record<string, HsCodeResult[]> = {
@@ -80,7 +80,7 @@ export interface HsCodeResult {
 export interface TradeMatrixResult {
   query: GetTradeMatrixParams;
   rows: unknown[];
-  source: 'apim' | 'legacy';
+  source: 'apim' | 'legacy' | 'preview';
   url: string;
   rateLimit?: RateLimitInfo;
 }
@@ -177,24 +177,44 @@ async function fetchApimMatrix(params: GetTradeMatrixParams): Promise<TradeMatri
   const apiKey = process.env.COMTRADE_API_KEY;
   if (!apiKey) return null;
 
-  const search = new URLSearchParams({
-    type: 'C',
-    freq: params.frequency ?? 'A',
-    reporter: params.reporter,
-    partner: params.partner ?? 'WLD',
-    time: String(params.year),
-    flow: params.flow,
-    classification: 'HS'
-  });
-  if (params.hs?.length) {
-    search.set('commodities', params.hs.join(','));
+  const reporterCode = mapRegionCode(params.reporter, 'M49');
+  if (!reporterCode) {
+    throw new Error(`Unable to map reporter ${params.reporter} to M49 code`);
   }
 
+  const partnerCode = params.partner ? mapRegionCode(params.partner, 'M49') : '0';
+  if (params.partner && !partnerCode) {
+    throw new Error(`Unable to map partner ${params.partner} to M49 code`);
+  }
+
+  const flowCode = mapFlowCode(params.flow);
+  const frequency = params.frequency ?? 'A';
+  const hsCodes = params.hs?.length ? params.hs.join(',') : 'TOTAL';
+  const classification = 'HS';
+
+  const search = new URLSearchParams({
+    reporterCode,
+    period: String(params.year),
+    flowCode,
+    includeDesc: 'true'
+  });
+
+  if (partnerCode) search.set('partnerCode', partnerCode);
+  if (hsCodes) search.set('cmdCode', hsCodes);
+
   try {
-    const result = await requestApim('tradeflow', search);
+    const path = `get/C/${frequency}/${classification}`;
+    const result = await requestApim(path, search);
     const payload = result.json as Record<string, any> | undefined;
     const data = payload ? (payload['data'] ?? payload['results'] ?? []) : [];
     const rows = Array.isArray(data) ? data : [];
+
+    if (rows.length === 0 && payload?.count === 0) {
+      // Attempt preview endpoint (no key) for diagnostic context
+      const preview = await fetchPreviewMatrix(params);
+      if (preview) return preview;
+    }
+
     return {
       query: params,
       rows,
@@ -204,7 +224,63 @@ async function fetchApimMatrix(params: GetTradeMatrixParams): Promise<TradeMatri
     };
   } catch (error) {
     console.error('Comtrade APIM matrix failed:', error);
+    const preview = await fetchPreviewMatrix(params).catch(() => null);
+    return preview;
+  }
+}
+
+async function fetchPreviewMatrix(params: GetTradeMatrixParams): Promise<TradeMatrixResult | null> {
+  const reporterCode = mapRegionCode(params.reporter, 'M49');
+  if (!reporterCode) return null;
+  const partnerCode = params.partner ? mapRegionCode(params.partner, 'M49') : '0';
+  if (params.partner && !partnerCode) return null;
+
+  const search = new URLSearchParams({
+    reporterCode,
+    period: String(params.year),
+    flowCode: mapFlowCode(params.flow),
+    includeDesc: 'true'
+  });
+  if (partnerCode) search.set('partnerCode', partnerCode);
+  if (params.hs?.length) {
+    search.set('cmdCode', params.hs.join(','));
+    search.set('maxRecords', '500');
+  } else {
+    search.set('cmdCode', 'TOTAL');
+    search.set('maxRecords', '500');
+  }
+
+  const freq = params.frequency ?? 'A';
+  const url = `https://comtradeapi.un.org/public/v1/preview/C/${freq}/HS?${search.toString()}`;
+  try {
+    const { json } = await getWithRetry(() => getJSON(url));
+    const payload = json as Record<string, any> | undefined;
+    const data = payload ? (payload['data'] ?? []) : [];
+    const rows = Array.isArray(data) ? data : [];
+    return {
+      query: params,
+      rows,
+      source: 'preview',
+      url
+    };
+  } catch (error) {
+    console.error('Comtrade preview matrix failed:', error);
     return null;
+  }
+}
+
+function mapFlowCode(flow: GetTradeMatrixParams['flow']): string {
+  switch (flow) {
+    case 'imports':
+      return 'M';
+    case 'exports':
+      return 'X';
+    case 'reexports':
+      return 'RX';
+    case 'reimports':
+      return 'RM';
+    default:
+      return 'M';
   }
 }
 
@@ -219,7 +295,7 @@ async function fetchLegacyMatrix(params: GetTradeMatrixParams): Promise<TradeMat
     throw new Error(`Unable to map partner ${params.partner} to M49 code`);
   }
 
-  const flowCode = mapFlow(params.flow);
+  const flowCode = mapLegacyFlow(params.flow);
   const search = new URLSearchParams({
     max: '50000',
     type: 'C',
@@ -281,7 +357,7 @@ async function requestApim(path: string, params?: URLSearchParams): Promise<Apim
   };
 }
 
-function mapFlow(flow: GetTradeMatrixParams['flow']): number {
+function mapLegacyFlow(flow: GetTradeMatrixParams['flow']): number {
   switch (flow) {
     case 'imports':
       return 1;
