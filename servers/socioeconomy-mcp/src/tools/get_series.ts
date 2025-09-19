@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { loadEquivalenceYaml, DefaultRoutingPolicy } from '@cluster-mcp/core';
+import { loadEquivalenceYaml, DefaultRoutingPolicy, resolveSemanticId } from '@cluster-mcp/core';
 import { getWbSeries } from '../providers/wb.js';
 import { getEurostatSeries } from '../providers/eurostat.js';
 import { getOecdSeries } from '../providers/oecd.js';
@@ -7,6 +7,7 @@ import { getIloSeries } from '../providers/ilostat.js';
 import type { Series, ProviderKey } from '@cluster-mcp/core';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { prepareSocioeconomicAliases } from '../aliases.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,19 +27,21 @@ export async function getSeries(params: GetSeriesParams) {
   try {
     const equivalenceFile = join(__dirname, '..', 'equivalence.yml');
     const equivalenceData = loadEquivalenceYaml(equivalenceFile);
+    const aliasMap = prepareSocioeconomicAliases(Object.keys(equivalenceData));
+    const { semanticId: resolvedSemanticId, matchedAlias } = resolveSemanticId(semanticId, aliasMap);
     const router = new DefaultRoutingPolicy(equivalenceData);
     
-    const providerIds = router.getProviderIds(semanticId);
+    const providerIds = router.getProviderIds(resolvedSemanticId);
     if (Object.keys(providerIds).length === 0) {
       return {
         content: [{
           type: 'text' as const,
-          text: `No provider mappings found for semantic ID: ${semanticId}`
+          text: `No provider mappings found for semantic ID: ${resolvedSemanticId}`
         }]
       };
     }
     
-    let providerOrder = router.getProviderOrder(semanticId, geo);
+    let providerOrder = router.getProviderOrder(resolvedSemanticId, geo);
     if (prefer && providerIds[prefer]) {
       providerOrder = [prefer, ...providerOrder.filter(p => p !== prefer)];
     }
@@ -74,7 +77,8 @@ export async function getSeries(params: GetSeriesParams) {
             content: [{
               type: 'text' as const,
               text: JSON.stringify({
-                semanticId,
+                semanticId: resolvedSemanticId,
+                requestedId: matchedAlias ? semanticId : undefined,
                 provider: provider,
                 series: {
                   ...series,
@@ -94,7 +98,7 @@ export async function getSeries(params: GetSeriesParams) {
     return {
       content: [{
         type: 'text' as const,
-        text: `No data found for ${semanticId}. Errors: ${errors.join('; ')}`
+        text: `No data found for ${resolvedSemanticId}. Errors: ${errors.join('; ')}`
       }]
     };
     

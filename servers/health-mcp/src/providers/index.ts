@@ -1,5 +1,5 @@
 import type { Profile, Series, ProviderKey } from '@cluster-mcp/core';
-import { loadEquivalenceYaml } from '@cluster-mcp/core';
+import { loadEquivalenceYaml, resolveSemanticId } from '@cluster-mcp/core';
 import type { SearchIndicatorParams } from '../tools/search_indicator.js';
 import type { GetSeriesParams } from '../tools/get_series.js';
 import type { CompareCountriesParams } from '../tools/compare_countries.js';
@@ -14,12 +14,18 @@ import { getOecdHealthSeries, type OecdMapping } from './oecd.js';
 import { getWorldBankSeries } from './wb.js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { prepareHealthAliases, healthAliasGroups } from '../aliases.js';
+
+function toArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value];
+}
 
 export interface IndicatorSummary {
   provider: string;
   id: string;
   label: string;
   unit?: string;
+  alias?: string;
 }
 
 export interface SeriesFetchOutcome {
@@ -43,12 +49,22 @@ const __dirname = dirname(__filename);
 const equivalencePath = join(__dirname, '..', 'equivalence.yml');
 
 let equivalenceCache: Record<string, HealthEquivalenceEntry> | null = null;
+let aliasMap: Map<string, string> | null = null;
 
 function loadEquivalence(): Record<string, HealthEquivalenceEntry> {
   if (!equivalenceCache) {
     equivalenceCache = loadEquivalenceYaml(equivalencePath) as Record<string, HealthEquivalenceEntry>;
   }
+  aliasMap = prepareHealthAliases(Object.keys(equivalenceCache));
   return equivalenceCache;
+}
+
+function resolveIndicatorId(rawId: string) {
+  if (!aliasMap) {
+    loadEquivalence();
+  }
+  const map = aliasMap ?? prepareHealthAliases(Object.keys(loadEquivalence()));
+  return resolveSemanticId(rawId, map);
 }
 
 function findMapping(semanticId: string): HealthEquivalenceEntry | undefined {
@@ -97,10 +113,12 @@ function normalizeProviderKey(value?: string): ProviderKey | undefined {
 export async function searchIndicators(params: SearchIndicatorParams): Promise<IndicatorSummary[]> {
   const whoResults = await searchWhoIndicators(params);
   const query = params.q.trim().toLowerCase();
+  const equivalence = loadEquivalence();
   const equivalenceMatches: IndicatorSummary[] = [];
+  const aliasMatches: IndicatorSummary[] = [];
 
   if (query) {
-    for (const [semanticId, entry] of Object.entries(loadEquivalence())) {
+    for (const [semanticId, entry] of Object.entries(equivalence)) {
       if (entry.label?.toLowerCase().includes(query)) {
         equivalenceMatches.push({
           provider: 'semantic',
@@ -110,19 +128,36 @@ export async function searchIndicators(params: SearchIndicatorParams): Promise<I
         });
       }
     }
+
+    for (const [semanticId, aliases] of Object.entries(healthAliasGroups)) {
+      const entry = equivalence[semanticId];
+      if (!entry) continue;
+      const matchedAlias = toArray(aliases).find((alias) => alias.toLowerCase().includes(query));
+      if (matchedAlias) {
+        aliasMatches.push({
+          provider: 'alias',
+          id: semanticId,
+          label: entry.label,
+          unit: entry.unit,
+          alias: matchedAlias
+        });
+      }
+    }
   }
 
-  return [...equivalenceMatches, ...whoResults];
+  return [...aliasMatches, ...equivalenceMatches, ...whoResults];
 }
 
 export async function fetchSeries(params: GetSeriesParams): Promise<SeriesFetchOutcome> {
-  const mapping = findMapping(params.semanticId) ?? findMappingByWhoId(params.semanticId);
+  const { semanticId: resolvedId, matchedAlias } = resolveIndicatorId(params.semanticId);
+  const mapping = findMapping(resolvedId) ?? findMappingByWhoId(resolvedId) ?? findMappingByWhoId(params.semanticId);
   const prefer = normalizeProviderKey(params.prefer);
   const providerOrder = buildProviderOrder(mapping, prefer);
 
-  const defaultDim1 = inferDefaultDim1(params.semanticId);
+  const defaultDim1 = inferDefaultDim1(resolvedId);
   const resolvedParams: GetSeriesParams = {
     ...params,
+    semanticId: resolvedId,
     dim1: params.dim1 ?? mapping?.dim1 ?? defaultDim1
   };
 
@@ -131,11 +166,12 @@ export async function fetchSeries(params: GetSeriesParams): Promise<SeriesFetchO
   for (const provider of providerOrder) {
     try {
       if (provider === 'who') {
-        const whoId = mapping?.who ?? params.semanticId;
+        const whoId = mapping?.who ?? resolvedId;
         const series = await getWhoSeries(whoId, resolvedParams);
         if (series) {
+          series.semanticId = resolvedId;
           return {
-            series: enrichSeries(series, mapping, provider, providerOrder),
+            series: enrichSeries(series, mapping, provider, providerOrder, matchedAlias ? params.semanticId : undefined),
             providerUsed: provider,
             providerOrder,
             errors
@@ -146,8 +182,9 @@ export async function fetchSeries(params: GetSeriesParams): Promise<SeriesFetchO
       if (provider === 'oecd' && mapping?.oecd) {
         const series = await getOecdHealthSeries(mapping.oecd, resolvedParams, mapping.unit);
         if (series) {
+          series.semanticId = resolvedId;
           return {
-            series: enrichSeries(series, mapping, provider, providerOrder),
+            series: enrichSeries(series, mapping, provider, providerOrder, matchedAlias ? params.semanticId : undefined),
             providerUsed: provider,
             providerOrder,
             errors
@@ -156,11 +193,12 @@ export async function fetchSeries(params: GetSeriesParams): Promise<SeriesFetchO
       }
 
       if (provider === 'wb') {
-        const wbId = mapping?.wb ?? params.semanticId;
+        const wbId = mapping?.wb ?? resolvedId;
         const series = await getWorldBankSeries(wbId, resolvedParams);
         if (series) {
+          series.semanticId = resolvedId;
           return {
-            series: enrichSeries(series, mapping, provider, providerOrder),
+            series: enrichSeries(series, mapping, provider, providerOrder, matchedAlias ? params.semanticId : undefined),
             providerUsed: provider,
             providerOrder,
             errors
@@ -213,13 +251,14 @@ export async function compareSeriesByCountry(
 
 export async function fetchMetadata(params: GetMetadataParams): Promise<Profile | null> {
   const provider = normalizeProviderKey(params.provider) ?? 'who';
+  const { semanticId: resolvedId } = resolveIndicatorId(params.id);
   const mapping = provider === 'who'
-    ? findMapping(params.id) ?? findMappingByWhoId(params.id)
-    : findMapping(params.id);
+    ? findMapping(resolvedId) ?? findMappingByWhoId(resolvedId) ?? findMappingByWhoId(params.id)
+    : findMapping(resolvedId);
 
   switch (provider) {
     case 'who':
-      return getWhoMetadata({ ...params, id: mapping?.who ?? params.id });
+      return getWhoMetadata({ ...params, id: mapping?.who ?? resolvedId });
     default:
       return null;
   }
@@ -229,7 +268,8 @@ function enrichSeries(
   series: Series,
   mapping: HealthEquivalenceEntry | undefined,
   provider?: ProviderKey,
-  providerOrder?: ProviderKey[]
+  providerOrder?: ProviderKey[],
+  requestedId?: string
 ): Series {
   if (mapping?.unit) {
     series.unit = mapping.unit;
@@ -239,6 +279,10 @@ function enrichSeries(
   }
   if (provider) {
     series.source.name = provider;
+  }
+  if (requestedId && requestedId !== series.semanticId) {
+    const aliasNote = `Requested alias "${requestedId}" resolved to canonical id "${series.semanticId}"`;
+    series.methodNotes = series.methodNotes ? `${series.methodNotes}; ${aliasNote}` : aliasNote;
   }
   if (providerOrder && providerOrder.length > 0) {
     const providerMessage = `Selected provider: ${provider ?? series.source.name}; evaluated order: ${providerOrder.join(' -> ')}`;

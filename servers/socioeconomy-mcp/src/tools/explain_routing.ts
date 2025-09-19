@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import { loadEquivalenceYaml, DefaultRoutingPolicy } from '@cluster-mcp/core';
+import { loadEquivalenceYaml, DefaultRoutingPolicy, resolveSemanticId } from '@cluster-mcp/core';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { prepareSocioeconomicAliases } from '../aliases.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -19,15 +20,18 @@ export async function explainRouting(params: ExplainRoutingParams) {
   try {
     const equivalenceFile = join(__dirname, '..', 'equivalence.yml');
     const equivalenceData = loadEquivalenceYaml(equivalenceFile);
+    const aliasMap = prepareSocioeconomicAliases(Object.keys(equivalenceData));
+    const { semanticId: resolvedSemanticId, matchedAlias } = resolveSemanticId(semanticId, aliasMap);
     const router = new DefaultRoutingPolicy(equivalenceData);
     
-    const providerOrder = router.getProviderOrder(semanticId, geo);
-    const providerIds = router.getProviderIds(semanticId);
+    const providerOrder = router.getProviderOrder(resolvedSemanticId, geo);
+    const providerIds = router.getProviderIds(resolvedSemanticId);
     
-    const mapping = equivalenceData[semanticId];
+    const mapping = equivalenceData[resolvedSemanticId];
     
     const explanation = {
-      semanticId,
+      semanticId: resolvedSemanticId,
+      requestedId: matchedAlias ? semanticId : undefined,
       geography: geo || 'not specified',
       routing: {
         order: providerOrder,

@@ -53,6 +53,13 @@ exports_goods_services:
   oecd: "SNA_TABLE1.P6.EXP.S"
   description: "Exports as percentage of GDP"
 
+imports_goods_services:
+  label: "Imports of goods and services"
+  unit: "% of GDP"
+  wb: "NE.IMP.GNFS.ZS"
+  oecd: "SNA_TABLE1.P7.IMP.S"
+  description: "Imports as percentage of GDP"
+
 government_debt:
   label: "General government gross debt"
   unit: "% of GDP"

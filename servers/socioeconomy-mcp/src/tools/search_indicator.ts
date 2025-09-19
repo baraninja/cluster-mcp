@@ -1,11 +1,16 @@
 import { z } from 'zod';
-import { loadEquivalenceYaml } from '@cluster-mcp/core';
+import { loadEquivalenceYaml, resolveSemanticId } from '@cluster-mcp/core';
 import { searchWbIndicators } from '../providers/wb.js';
 import { searchEurostatDatasets } from '../providers/eurostat.js';
 import { searchOecdIndicators } from '../providers/oecd.js';
 import { searchIloIndicators } from '../providers/ilostat.js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { prepareSocioeconomicAliases, socioeconomicAliasGroups } from '../aliases.js';
+
+function toArray<T>(value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value];
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,6 +27,7 @@ export async function searchIndicator(params: SearchIndicatorParams) {
   try {
     const equivalenceFile = join(__dirname, '..', 'equivalence.yml');
     const equivalenceData = loadEquivalenceYaml(equivalenceFile);
+    const aliasMap = prepareSocioeconomicAliases(Object.keys(equivalenceData));
     
     // Search in equivalence mappings first
     const localMatches = Object.entries(equivalenceData)
@@ -37,6 +43,23 @@ export async function searchIndicator(params: SearchIndicatorParams) {
         description: mapping.description,
         availableProviders: Object.keys(mapping).filter(k => !['label', 'unit', 'description'].includes(k))
       }));
+
+    const aliasMatches = Object.entries(socioeconomicAliasGroups)
+      .filter(([canonicalId, aliases]) => Boolean(equivalenceData[canonicalId]) && toArray(aliases).some(alias => alias.toLowerCase().includes(q.toLowerCase())))
+      .map(([canonicalId, aliases]) => {
+        const mapping = equivalenceData[canonicalId];
+        const matchedAlias = toArray(aliases).find(alias => alias.toLowerCase().includes(q.toLowerCase())) ?? null;
+        const resolution = resolveSemanticId(matchedAlias ?? canonicalId, aliasMap);
+        return {
+          provider: 'alias' as const,
+          id: resolution.semanticId,
+          alias: matchedAlias,
+          label: mapping.label,
+          unit: mapping.unit,
+          description: mapping.description,
+          availableProviders: Object.keys(mapping).filter(k => !['label', 'unit', 'description'].includes(k))
+        };
+      });
     
     // Search providers in parallel
     const [wbResults, eurostatResults, oecdResults, iloResults] = await Promise.allSettled([
@@ -47,6 +70,7 @@ export async function searchIndicator(params: SearchIndicatorParams) {
     ]);
     
     const allResults = [
+      ...aliasMatches,
       ...localMatches,
       ...(wbResults.status === 'fulfilled' ? wbResults.value : []),
       ...(eurostatResults.status === 'fulfilled' ? eurostatResults.value : []),

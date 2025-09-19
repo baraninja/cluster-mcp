@@ -157,6 +157,19 @@ Convert between ISO and NUTS regional coding systems.
 | `poverty_rate` | Poverty headcount ratio | % of population | wb, oecd |
 | `energy_renewable` | Renewable energy consumption | % of total | wb, oecd |
 
+### Semantic Aliases
+
+Common query terms resolve automatically to canonical IDs:
+
+- GDP & growth: `gdp`, `gdp_growth`, `economic_growth` → `gdp_constant_prices`
+- GDP per capita: `gdp_per_capita`, `gdp per capita`, `gdppercapita` → `gdp_per_capita_constant`
+- Labour market: `unemployment`, `jobless`, `joblessness` → `unemployment_rate`; `employment_rate`, `employment` → `employment_rate_15_64`
+- Prices & inflation: `inflation`, `price_growth`, `cpi`, `consumer_price_index` → `inflation_cpi`
+- Trade: `exports`, `trade`, `export` → `exports_goods_services`; `imports`, `import` → `imports_goods_services`
+- Public sector: `debt`, `public_debt`, `sovereign_debt` → `government_debt`
+- Innovation: `r&d`, `research`, `innovation`, `rd` → `research_development`
+- Demography: `longevity` → `life_expectancy`
+
 ## Provider Routing Logic
 
 ### EU Countries (27 members)

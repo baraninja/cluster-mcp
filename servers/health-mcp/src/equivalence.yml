@@ -42,3 +42,15 @@ life_expectancy_at_birth:
   unit: "years"
   who: "WHOSIS_000001"
   dim1: "SEX_BTSX"
+
+imr:
+  label: "Infant mortality rate"
+  unit: "deaths per 1000 live births"
+  who: "IMR"
+  wb: "SP.DYN.IMRT.IN"
+
+maternal_mortality_ratio:
+  label: "Maternal mortality ratio"
+  unit: "deaths per 100000 live births"
+  who: "MDG_0000000026"
+  wb: "SH.STA.MMRT"

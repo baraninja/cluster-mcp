@@ -25,6 +25,7 @@ export async function searchIndicator(params: SearchIndicatorParams) {
     const formatted = results.slice(0, 25).map((item) => ({
       provider: item.provider,
       id: item.id,
+      alias: item.alias,
       label: item.label,
       unit: item.unit
     }));

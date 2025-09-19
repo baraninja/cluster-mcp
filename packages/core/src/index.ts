@@ -7,6 +7,7 @@ export { jsonstatToSeries } from './util/jsonstat.js';
 export { sdmxJsonToObs, sdmxJsonToSeries } from './util/sdmxjson.js';
 export * from './util/units.js';
 export * from './util/codemaps.js';
+export * from './util/semanticIds.js';
 export {
   SdmxClient,
   parseStructureUrn,
