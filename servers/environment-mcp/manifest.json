@@ -1,11 +1,21 @@
 {
+  "manifest_version": "0.1",
   "name": "environment-mcp",
   "version": "0.1.0",
   "description": "MCP server for air quality data via OpenAQ v3",
-  "author": "cluster-mcp",
-  "license": "MIT",
-  "runtime": {
-    "node": ">=20.0.0"
+  "author": {
+    "name": "cluster-mcp"
   },
-  "entrypoint": "dist/server.js"
+  "license": "MIT",
+  "server": {
+    "type": "node",
+    "entry_point": "dist/server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/server.js"
+      ],
+      "env": {}
+    }
+  }
 }

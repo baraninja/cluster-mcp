@@ -1,11 +1,21 @@
 {
+  "manifest_version": "0.1",
   "name": "research-mcp",
   "version": "0.1.0",
   "description": "MCP server providing access to OpenAlex, Crossref, and Europe PMC for academic research",
-  "author": "cluster-mcp",
-  "license": "MIT",
-  "runtime": {
-    "node": ">=20.0.0"
+  "author": {
+    "name": "cluster-mcp"
   },
-  "entrypoint": "dist/server.js"
+  "license": "MIT",
+  "server": {
+    "type": "node",
+    "entry_point": "dist/server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/server.js"
+      ],
+      "env": {}
+    }
+  }
 }

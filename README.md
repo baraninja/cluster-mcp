@@ -159,7 +159,7 @@ cluster-mcp/
 ### Available Scripts
 - `npm run build` - Build all packages & servers
 - `npm run dev` - Watch mode for development  
-- `npm run pack:all` - Package all servers (STDIO only)
+- `npm run pack:all` - Package all servers into `.mcpb` bundles (requires global `mcpb` CLI)
 - `npm test` - Run tests (if available)
 
 ## 🔑 API Keys & Rate Limits
@@ -254,6 +254,15 @@ npm test -- --grep "GDELT"
 npm test -- --grep "routing"
 ```
 
+## 📦 MCP Bundles
+
+You can ship any of the STDIO servers as Model Context Protocol bundles for use in clients such as Claude Desktop.
+
+1. Install the bundler once: `npm install -g @anthropic-ai/mcpb`
+2. Run `npm run pack:all`
+
+This rebuilds every server and writes ready-to-import bundles to `bundles/<server>.mcpb`. Each server script can also be packed individually with `npm -w <server> run pack:mcpb` if you only need one bundle.
+
 ## 📄 License
 
 MIT License - see individual server README files for detailed API documentation.
@@ -269,6 +278,5 @@ MIT License - see individual server README files for detailed API documentation.
 
 ### v2.0 (Future)
 - NUTS/SCB regional coding
-- MCPB packaging support  
 - Advanced caching with SQLite
 - WebSocket streaming for real-time data

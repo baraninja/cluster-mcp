@@ -1,11 +1,21 @@
 {
+  "manifest_version": "0.1",
   "name": "trade-mcp",
   "version": "0.1.0",
   "description": "MCP server for international trade flows via UN Comtrade",
-  "author": "cluster-mcp",
-  "license": "MIT",
-  "runtime": {
-    "node": ">=20.0.0"
+  "author": {
+    "name": "cluster-mcp"
   },
-  "entrypoint": "dist/server.js"
+  "license": "MIT",
+  "server": {
+    "type": "node",
+    "entry_point": "dist/server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/server.js"
+      ],
+      "env": {}
+    }
+  }
 }

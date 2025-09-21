@@ -8,7 +8,7 @@
     "build": "tsc && node scripts/postbuild.cjs",
     "dev": "tsc --watch",
     "start": "node dist/server.js",
-    "pack:mcpb": "echo 'MCPB packaging not implemented yet - use manual STDIO configuration'",
+    "pack:mcpb": "npm run build && node -e \"const fs=require('fs');const path=require('path');fs.mkdirSync(path.resolve(process.cwd(),'../../bundles'),{recursive:true});\" && mcpb pack . ../../bundles/health-mcp.mcpb",
     "clean": "rm -rf dist"
   },
   "dependencies": {
