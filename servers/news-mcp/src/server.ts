@@ -9,9 +9,14 @@ import {
   ListToolsRequest,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { searchNews } from './tools/search_news.js';
-import { timeline } from './tools/timeline.js';
-import { z } from 'zod';
+import { searchNews, searchNewsSchema } from './tools/search_news.js';
+import { timeline, timelineSchema } from './tools/timeline.js';
+import {
+  fetchArticle,
+  fetchArticleSchema,
+  fetchMultiple,
+  fetchMultipleSchema,
+} from './tools/fetch_article.js';
 
 class NewsMcpServer {
   private server: Server;
@@ -84,22 +89,60 @@ class NewsMcpServer {
             required: ['q']
           },
         },
+        {
+          name: 'fetch_article',
+          description: 'Fetch the content of a specific news article by URL',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              url: {
+                type: 'string',
+                description: 'Direct URL to the article to fetch',
+                format: 'uri',
+              },
+              maxChars: {
+                type: 'number',
+                description: 'Maximum number of characters to return (default: 10000, max: 50000)',
+                minimum: 1,
+                maximum: 50000,
+                default: 10000,
+              },
+            },
+            required: ['url'],
+          },
+        },
+        {
+          name: 'fetch_multiple',
+          description: 'Fetch multiple news articles in a single request',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              urls: {
+                type: 'array',
+                description: 'List of article URLs to fetch (max 5)',
+                items: {
+                  type: 'string',
+                  format: 'uri',
+                },
+                minItems: 1,
+                maxItems: 5,
+              },
+              maxCharsPerArticle: {
+                type: 'number',
+                description: 'Character limit for each article (default: 5000, max: 50000)',
+                minimum: 1,
+                maximum: 50000,
+                default: 5000,
+              },
+            },
+            required: ['urls'],
+          },
+        },
       ],
     }));
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
       const { name, arguments: args } = request.params;
-      
-      // Define schemas for validation
-      const searchNewsSchema = z.object({
-        q: z.string().min(1),
-        max: z.number().int().min(10).max(250).optional().default(100)
-      });
-      
-      const timelineSchema = z.object({
-        q: z.string().min(1),
-        mode: z.enum(['timelinevolraw', 'timelinelang']).optional().default('timelinevolraw')
-      });
 
       try {
         switch (name) {
@@ -108,6 +151,12 @@ class NewsMcpServer {
           
           case 'timeline':
             return await timeline(timelineSchema.parse(args));
+
+          case 'fetch_article':
+            return await fetchArticle(fetchArticleSchema.parse(args));
+
+          case 'fetch_multiple':
+            return await fetchMultiple(fetchMultipleSchema.parse(args));
           
           default:
             throw new Error(`Unknown tool: ${name}`);

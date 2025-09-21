@@ -10,6 +10,14 @@
     {
       "name": "timeline",
       "description": "Get news timeline for a topic"
+    },
+    {
+      "name": "fetch_article",
+      "description": "Fetch the content of a single news article"
+    },
+    {
+      "name": "fetch_multiple",
+      "description": "Fetch multiple news articles in one request"
     }
   ]
 }

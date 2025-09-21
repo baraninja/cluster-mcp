@@ -85,6 +85,70 @@ Generate temporal analysis of news coverage for a topic.
 - `timelinevolraw`: Article volume over time
 - `timelinelang`: Article count by language over time
 
+### fetch_article
+Retrieve the full content of a specific article discovered in search results.
+
+**Input:**
+```json
+{
+  "url": "https://example.com/news/election-2024-analysis",
+  "maxChars": 12000
+}
+```
+
+**Output:**
+```json
+{
+  "url": "https://example.com/news/election-2024-analysis",
+  "title": "Election 2024: Key Trends",
+  "content": "Election coverage kicked into high gear today as...",
+  "contentType": "text/html; charset=utf-8",
+  "originalLength": 18754,
+  "truncated": true,
+  "maxChars": 12000,
+  "retrievedAt": "2024-01-15T10:45:00.000Z"
+}
+```
+
+### fetch_multiple
+Batch fetch up to five articles in a single call with per-article truncation.
+
+**Input:**
+```json
+{
+  "urls": [
+    "https://example.com/news/electric-vehicles-europe",
+    "https://example.com/news/electric-vehicles-us"
+  ],
+  "maxCharsPerArticle": 6000
+}
+```
+
+**Output:**
+```json
+{
+  "count": 2,
+  "maxCharsPerArticle": 6000,
+  "results": [
+    {
+      "url": "https://example.com/news/electric-vehicles-europe",
+      "title": "Europe Accelerates EV Adoption",
+      "content": "European registrations of electric vehicles climbed...",
+      "contentType": "text/html; charset=utf-8",
+      "originalLength": 9210,
+      "truncated": true,
+      "maxChars": 6000,
+      "retrievedAt": "2024-01-15T10:45:00.000Z"
+    },
+    {
+      "url": "https://example.com/news/electric-vehicles-us",
+      "error": "404 Not Found"
+    }
+  ],
+  "retrievedAt": "2024-01-15T10:45:00.000Z"
+}
+```
+
 ## GDELT DOC 2.0 Data Source
 
 ### Coverage
