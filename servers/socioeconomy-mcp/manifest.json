@@ -1,5 +1,5 @@
 {
-  "manifest_version": "0.1",
+  "manifest_version": "0.2",
   "name": "socioeconomy-mcp",
   "version": "0.1.0",
   "description": "MCP server providing access to socioeconomic data from World Bank, Eurostat, OECD, and ILO",
@@ -16,6 +16,11 @@
         "${__dirname}/dist/server.js"
       ],
       "env": {}
+    }
+  },
+  "compatibility": {
+    "runtimes": {
+      "node": ">=20.0.0"
     }
   }
 }

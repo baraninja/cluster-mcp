@@ -1,5 +1,5 @@
 {
-  "manifest_version": "0.1",
+  "manifest_version": "0.2",
   "name": "research-mcp",
   "version": "0.1.0",
   "description": "MCP server providing access to OpenAlex, Crossref, and Europe PMC for academic research",
@@ -15,7 +15,22 @@
       "args": [
         "${__dirname}/dist/server.js"
       ],
-      "env": {}
+      "env": {
+        "CONTACT_EMAIL": "${user_config.contact_email}"
+      }
+    }
+  },
+  "compatibility": {
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  },
+  "user_config": {
+    "contact_email": {
+      "type": "string",
+      "title": "Contact Email",
+      "description": "Email address used in API user-agents for OpenAlex and Crossref courtesy headers.",
+      "required": false
     }
   }
 }

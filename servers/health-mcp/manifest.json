@@ -1,5 +1,5 @@
 {
-  "manifest_version": "0.1",
+  "manifest_version": "0.2",
   "name": "health-mcp",
   "version": "0.1.0",
   "description": "MCP server for WHO Global Health Observatory indicators with OECD and World Bank fallbacks",
@@ -16,6 +16,11 @@
         "${__dirname}/dist/server.js"
       ],
       "env": {}
+    }
+  },
+  "compatibility": {
+    "runtimes": {
+      "node": ">=20.0.0"
     }
   }
 }

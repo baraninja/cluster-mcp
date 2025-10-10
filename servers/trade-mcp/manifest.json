@@ -1,5 +1,5 @@
 {
-  "manifest_version": "0.1",
+  "manifest_version": "0.2",
   "name": "trade-mcp",
   "version": "0.1.0",
   "description": "MCP server for international trade flows via UN Comtrade",
@@ -15,7 +15,30 @@
       "args": [
         "${__dirname}/dist/server.js"
       ],
-      "env": {}
+      "env": {
+        "COMTRADE_API_KEY": "${user_config.comtrade_api_key}",
+        "COMTRADE_BASE_URL": "${user_config.comtrade_base_url}"
+      }
+    }
+  },
+  "compatibility": {
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  },
+  "user_config": {
+    "comtrade_api_key": {
+      "type": "string",
+      "title": "Comtrade API Key",
+      "description": "UN Comtrade API key for high-throughput requests. Leave empty for public rate limits.",
+      "sensitive": true,
+      "required": false
+    },
+    "comtrade_base_url": {
+      "type": "string",
+      "title": "Comtrade API Base URL",
+      "description": "Override the Comtrade API base URL if you use a regional mirror.",
+      "default": "https://comtradeapi.un.org/data/v1/"
     }
   }
 }
