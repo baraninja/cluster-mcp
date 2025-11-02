@@ -133,20 +133,28 @@ export async function getWithRetry<T>(
   baseDelayMs = 350
 ): Promise<T> {
   let lastError: unknown;
-  
+
   for (let i = 0; i < tries; i++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error;
-      
+
+      // Check if it's a rate limit error (429)
+      const isRateLimitError = error instanceof Error &&
+        (error.message.includes('429') || error.message.includes('Too Many Requests'));
+
       if (i < tries - 1) {
-        const delayMs = baseDelayMs * (i + 1);
+        // Use longer delay for rate limit errors
+        let delayMs = baseDelayMs * (i + 1);
+        if (isRateLimitError) {
+          delayMs = Math.max(delayMs, 2000 * (i + 1)); // Min 2s, 4s, 6s for rate limits
+        }
         await new Promise(resolve => setTimeout(resolve, delayMs));
       }
     }
   }
-  
+
   throw lastError;
 }
 

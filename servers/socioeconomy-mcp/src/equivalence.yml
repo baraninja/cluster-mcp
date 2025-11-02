@@ -4,14 +4,14 @@
 employment_rate_15_64:
   label: "Employment rate, age 15-64"
   unit: "%"
-  eurostat: "LFSI_EMP_A"
+  eurostat: "LFST_R_LFE2EMPRT"
   wb: "SL.EMP.TOTL.SP.ZS"
   description: "Employment as percentage of population aged 15-64"
 
 unemployment_rate:
   label: "Unemployment rate"
   unit: "%"
-  eurostat: "UNE_RT_A" 
+  eurostat: "LFST_R_LFU3RT"
   wb: "SL.UEM.TOTL.ZS"
   oecd: "MEI_CLI.LMUNEMPRAW.M"
   description: "Unemployed as percentage of total labor force"
@@ -43,7 +43,7 @@ population_total:
   unit: "persons"
   wb: "SP.POP.TOTL"
   oecd: "DSD_DEMOG.POP_TOT.A"
-  eurostat: "DEMO_PJAN"
+  eurostat: "DEMO_R_PJANGRP3"
   description: "Total population"
 
 exports_goods_services:
@@ -117,3 +117,46 @@ energy_renewable:
   wb: "EG.FEC.RNEW.ZS"
   oecd: "IEA_REN.RENEWELC.PC"
   description: "Renewable energy as percentage of total energy consumption"
+
+population_density:
+  label: "Population density"
+  unit: "people per sq km"
+  wb: "EN.POP.DNST"
+  description: "Population density (people per sq km of land area)"
+
+urban_population:
+  label: "Urban population"
+  unit: "% of total"
+  wb: "SP.URB.TOTL.IN.ZS"
+  description: "Urban population as percentage of total population"
+
+rural_population:
+  label: "Rural population"
+  unit: "% of total"
+  wb: "SP.RUR.TOTL.ZS"
+  description: "Rural population as percentage of total population"
+
+wage_gap_gender:
+  label: "Gender wage gap"
+  unit: "%"
+  oecd: "EAR.GENDERWAGE_RT.A"
+  description: "Difference between male and female median earnings, expressed as a percentage of male earnings"
+
+minimum_wage:
+  label: "Minimum wage"
+  unit: "USD PPP"
+  oecd: "MIN2AVE.MIN_WAGE.A"
+  description: "Statutory minimum wage in purchasing power parity"
+
+foreign_direct_investment:
+  label: "Foreign direct investment, net inflows"
+  unit: "% of GDP"
+  wb: "BX.KLT.DINV.WD.GD.ZS"
+  oecd: "FDI.FLOW_IIP4.A"
+  description: "Net inflows of investment to acquire lasting management interest"
+
+trade_balance:
+  label: "Trade balance"
+  unit: "% of GDP"
+  wb: "NE.RSB.GNFS.ZS"
+  description: "Net exports (exports minus imports) as percentage of GDP"

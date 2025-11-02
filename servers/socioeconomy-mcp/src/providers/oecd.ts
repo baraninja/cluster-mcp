@@ -1,7 +1,11 @@
-import { getWithRetry, getJSON, sdmxJsonToSeries } from '@cluster-mcp/core';
+import { getWithRetry, getJSON, sdmxJsonToSeries, MemoryCache } from '@cluster-mcp/core';
 import type { Series } from '@cluster-mcp/core';
 
 const BASE = 'https://sdmx.oecd.org/public/rest/data';
+
+// Cache for OECD data (1 hour TTL to avoid rate limits)
+const oecdCache = new MemoryCache();
+const CACHE_TTL = 3600000; // 1 hour
 
 export async function getOecdSeries(
   datasetKey: string,
@@ -10,9 +14,16 @@ export async function getOecdSeries(
 ): Promise<Series> {
   const geoFilter = geo.toUpperCase();
   const timeFilter = years ? `+${years[0]}:${years[1]}` : '';
-  
+
   const url = `${BASE}/${datasetKey}/${geoFilter}${timeFilter}?format=jsondata&dimensionAtObservation=TIME_PERIOD`;
-  
+
+  // Check cache first
+  const cacheKey = `oecd:${datasetKey}:${geoFilter}:${timeFilter}`;
+  const cached = oecdCache.get<Series>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const { json } = await getWithRetry(() => getJSON(url));
   
   if (!(json as any)?.dataSets?.[0]?.observations) {
@@ -20,8 +31,8 @@ export async function getOecdSeries(
   }
   
   const values = sdmxJsonToSeries(json as any, 'TIME_PERIOD', 'REF_AREA');
-  
-  return {
+
+  const series: Series = {
     semanticId: datasetKey,
     unit: (json as any).structure?.dimensions?.observation?.find((d: any) => d.id === 'OBS_VALUE')?.unit || '',
     freq: 'A',
@@ -34,6 +45,11 @@ export async function getOecdSeries(
     definition: (json as any).structure?.name,
     retrievedAt: new Date().toISOString()
   };
+
+  // Cache the result
+  oecdCache.set(cacheKey, series, CACHE_TTL);
+
+  return series;
 }
 
 export async function searchOecdIndicators(query: string) {

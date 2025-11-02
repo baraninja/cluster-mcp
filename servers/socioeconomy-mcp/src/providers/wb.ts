@@ -4,10 +4,13 @@ import type { Series } from '@cluster-mcp/core';
 const BASE = 'https://api.worldbank.org/v2';
 
 export async function getWbSeries(
-  indicatorId: string, 
-  geo = 'SE', 
+  indicatorId: string,
+  geo = 'SE',
   years?: [number, number]
 ): Promise<Series> {
+  // World Bank only supports ISO country codes (2 characters)
+  // If NUTS code is provided (e.g., SE11), extract country code
+  const isSubNational = geo.length > 2;
   const isoCode = geo.slice(0, 2).toUpperCase();
   
   const params = new URLSearchParams({
@@ -49,7 +52,9 @@ export async function getWbSeries(
       url
     },
     definition: metadata?.sourceNote,
-    retrievedAt: new Date().toISOString()
+    retrievedAt: new Date().toISOString(),
+    geoLevel: isSubNational ? 'national' : 'national',
+    geoNote: isSubNational ? `World Bank does not support sub-national data. Returning national data for ${isoCode} instead of ${geo}` : undefined
   };
 }
 

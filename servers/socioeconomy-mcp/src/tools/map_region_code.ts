@@ -69,46 +69,87 @@ const NUTS_TO_ISO: Record<string, string> = {
 
 export async function mapRegionCode(params: MapRegionCodeParams) {
   const { code, to } = params;
-  
+
   try {
     const inputCode = code.toUpperCase();
     let result: string | undefined;
     let fromSystem: string;
-    
+    let nutsLevel: string | undefined;
+
     if (to === 'NUTS') {
+      // Converting ISO to NUTS
       result = ISO_TO_NUTS[inputCode];
-      fromSystem = 'ISO';
+      fromSystem = 'ISO2';
+      nutsLevel = 'NUTS0';
     } else {
-      result = NUTS_TO_ISO[inputCode];
+      // Converting NUTS to ISO
       fromSystem = 'NUTS';
+
+      // NUTS codes always start with the ISO country code (first 2 characters)
+      const countryCode = inputCode.slice(0, 2);
+
+      // Detect NUTS level based on length
+      if (inputCode.length === 2) {
+        nutsLevel = 'NUTS0';
+      } else if (inputCode.length === 3) {
+        nutsLevel = 'NUTS1';
+      } else if (inputCode.length === 4) {
+        nutsLevel = 'NUTS2';
+      } else if (inputCode.length === 5) {
+        nutsLevel = 'NUTS3';
+      }
+
+      // Map to ISO (extract first 2 characters and convert EL→GR if needed)
+      result = NUTS_TO_ISO[countryCode];
+
+      if (!result) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              error: 'MAPPING_NOT_FOUND',
+              message: `No mapping found from ${fromSystem} code '${code}' to ${to}`,
+              input: { code: inputCode, system: fromSystem, level: nutsLevel },
+              suggestion: 'This code may not be a valid EU NUTS region code'
+            }, null, 2)
+          }]
+        };
+      }
     }
-    
+
     if (!result) {
       return {
         content: [{
           type: 'text' as const,
-          text: `No mapping found from ${fromSystem} code '${code}' to ${to}`
+          text: JSON.stringify({
+            error: 'MAPPING_NOT_FOUND',
+            message: `No mapping found from ${fromSystem} code '${code}' to ${to}`,
+            input: { code: inputCode, system: fromSystem },
+            suggestion: 'This code may not be a valid ISO2 country code'
+          }, null, 2)
         }]
       };
     }
-    
+
     return {
       content: [{
         type: 'text' as const,
         text: JSON.stringify({
           input: {
             code: inputCode,
-            system: fromSystem
+            system: fromSystem,
+            level: nutsLevel
           },
           output: {
             code: result,
-            system: to
+            system: to,
+            level: to === 'NUTS' ? 'NUTS0' : undefined
           },
-          mapping: `${inputCode} (${fromSystem}) → ${result} (${to})`
+          mapping: `${inputCode} (${fromSystem}${nutsLevel ? ' ' + nutsLevel : ''}) → ${result} (${to})`
         }, null, 2)
       }]
     };
-    
+
   } catch (error) {
     return {
       content: [{

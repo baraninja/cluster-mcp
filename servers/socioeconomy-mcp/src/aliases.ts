@@ -11,6 +11,13 @@ export const socioeconomicAliasGroups = {
   government_debt: ['debt', 'public_debt', 'sovereign_debt'],
   research_development: ['r&d', 'research', 'innovation', 'rd'],
   life_expectancy: ['longevity'],
+  population_density: ['density', 'pop_density'],
+  urban_population: ['urbanization', 'urban'],
+  rural_population: ['rural'],
+  wage_gap_gender: ['gender_gap', 'pay_gap', 'wage_gap'],
+  minimum_wage: ['min_wage', 'minimum_salary'],
+  foreign_direct_investment: ['fdi', 'foreign_investment'],
+  trade_balance: ['net_exports', 'trade_surplus'],
 };
 
 const aliasMap = buildSemanticAliasMap(socioeconomicAliasGroups);

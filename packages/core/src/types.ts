@@ -21,6 +21,8 @@ export interface Series {
   definition?: string;
   methodNotes?: string;
   retrievedAt: string;
+  geoLevel?: 'national' | 'regional' | 'local';
+  geoNote?: string;
 }
 
 export interface Work {

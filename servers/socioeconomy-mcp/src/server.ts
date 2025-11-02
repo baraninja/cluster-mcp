@@ -9,10 +9,13 @@ import {
   ListToolsRequest,
 } from '@modelcontextprotocol/sdk/types.js';
 
-import { getSeries } from './tools/get_series.js';
-import { searchIndicator } from './tools/search_indicator.js';
+import { getSeries, getSeriesSchema } from './tools/get_series.js';
+import { getSeriesBatch, getSeriesBatchSchema } from './tools/get_series_batch.js';
+import { searchIndicator, searchIndicatorSchema } from './tools/search_indicator.js';
 import { explainRouting } from './tools/explain_routing.js';
 import { mapRegionCode } from './tools/map_region_code.js';
+import { listSemanticIds } from './tools/list_semantic_ids.js';
+import { getCoverage } from './tools/get_coverage.js';
 import { z } from 'zod';
 
 class SocioeconomyMcpServer {
@@ -72,6 +75,11 @@ class SocioeconomyMcpServer {
                 enum: ['eurostat', 'oecd', 'wb', 'ilostat'],
                 description: 'Preferred provider',
                 optional: true
+              },
+              strictPreference: {
+                type: 'boolean',
+                description: 'If true, only use the preferred provider (no fallback to other providers)',
+                optional: true
               }
             },
             required: ['semanticId']
@@ -113,6 +121,47 @@ class SocioeconomyMcpServer {
           },
         },
         {
+          name: 'get_series_batch',
+          description: 'Get time series data for multiple countries at once. Useful for comparisons.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              semanticId: {
+                type: 'string',
+                description: 'Semantic identifier for the indicator',
+                minLength: 1
+              },
+              geos: {
+                type: 'array',
+                description: 'Array of geographic codes (ISO2 or NUTS). Maximum 20 countries.',
+                items: { type: 'string' },
+                minItems: 1,
+                maxItems: 20
+              },
+              years: {
+                type: 'array',
+                description: 'Year range [start, end]',
+                items: { type: 'number' },
+                minItems: 2,
+                maxItems: 2,
+                optional: true
+              },
+              prefer: {
+                type: 'string',
+                enum: ['eurostat', 'oecd', 'wb', 'ilostat'],
+                description: 'Preferred provider',
+                optional: true
+              },
+              strictPreference: {
+                type: 'boolean',
+                description: 'If true, only use the preferred provider (no fallback)',
+                optional: true
+              }
+            },
+            required: ['semanticId', 'geos']
+          },
+        },
+        {
           name: 'map_region_code',
           description: 'Convert between different region coding systems (ISO/NUTS)',
           inputSchema: {
@@ -132,47 +181,84 @@ class SocioeconomyMcpServer {
             required: ['code', 'to']
           },
         },
+        {
+          name: 'list_semantic_ids',
+          description: 'List all available semantic indicator IDs with their metadata',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              category: {
+                type: 'string',
+                enum: ['all', 'economic', 'social', 'environmental'],
+                description: 'Filter by category (default: all)',
+                optional: true
+              }
+            }
+          },
+        },
+        {
+          name: 'get_coverage',
+          description: 'Get data coverage information for a specific semantic indicator',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              semanticId: {
+                type: 'string',
+                description: 'Semantic identifier for the indicator',
+                minLength: 1
+              }
+            },
+            required: ['semanticId']
+          },
+        },
       ],
     }));
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
       const { name, arguments: args } = request.params;
-      
-      // Define schemas for validation  
-      const getSeriesSchema = z.object({
-        semanticId: z.string().min(1),
-        geo: z.string().optional(),
-        years: z.tuple([z.number(), z.number()]).optional(),
-        prefer: z.enum(['eurostat', 'oecd', 'wb', 'ilostat']).optional()
-      });
-      
-      const searchIndicatorSchema = z.object({
-        q: z.string().min(1)
-      });
-      
+
+      // Schemas are imported from tool files to avoid duplication
+      // Define remaining schemas that aren't exported
       const explainRoutingSchema = z.object({
         semanticId: z.string().min(1),
         geo: z.string().optional()
       });
-      
+
       const mapRegionCodeSchema = z.object({
         code: z.string().min(1),
         to: z.enum(['ISO', 'NUTS'])
+      });
+
+      const listSemanticIdsSchema = z.object({
+        category: z.enum(['all', 'economic', 'social', 'environmental']).optional()
+      });
+
+      const getCoverageSchema = z.object({
+        semanticId: z.string().min(1)
       });
 
       try {
         switch (name) {
           case 'get_series':
             return await getSeries(getSeriesSchema.parse(args));
-          
+
+          case 'get_series_batch':
+            return await getSeriesBatch(getSeriesBatchSchema.parse(args));
+
           case 'search_indicator':
             return await searchIndicator(searchIndicatorSchema.parse(args));
-          
+
           case 'explain_routing':
             return await explainRouting(explainRoutingSchema.parse(args));
-          
+
           case 'map_region_code':
             return await mapRegionCode(mapRegionCodeSchema.parse(args));
+
+          case 'list_semantic_ids':
+            return await listSemanticIds(listSemanticIdsSchema.parse(args));
+
+          case 'get_coverage':
+            return await getCoverage(getCoverageSchema.parse(args));
           
           default:
             throw new Error(`Unknown tool: ${name}`);
