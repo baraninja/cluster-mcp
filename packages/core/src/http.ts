@@ -107,24 +107,36 @@ export async function getJSON(url: string, headers: Record<string, string> = {})
       ...headers
     }
   });
-  
+
   const headerMap = toHeaderMap(response.headers);
-  return {
-    json: await response.json(),
-    headers: headerMap,
-    rateLimit: extractRateLimit(headerMap)
-  };
+
+  try {
+    const json = await response.json();
+    return {
+      json,
+      headers: headerMap,
+      rateLimit: extractRateLimit(headerMap)
+    };
+  } catch (error) {
+    throw new Error(`Failed to parse JSON response from ${url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getText(url: string, headers: Record<string, string> = {}) {
   const response = await coreFetch(url, { headers });
-  
+
   const headerMap = toHeaderMap(response.headers);
-  return {
-    text: await response.text(),
-    headers: headerMap,
-    rateLimit: extractRateLimit(headerMap)
-  };
+
+  try {
+    const text = await response.text();
+    return {
+      text,
+      headers: headerMap,
+      rateLimit: extractRateLimit(headerMap)
+    };
+  } catch (error) {
+    throw new Error(`Failed to read text response from ${url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function getWithRetry<T>(
