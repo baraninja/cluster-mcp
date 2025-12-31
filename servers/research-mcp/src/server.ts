@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { startServer } from '@cluster-mcp/core';
 
 import { searchPapers } from './tools/search_papers.js';
 import { getPaper } from './tools/get_paper.js';
@@ -85,18 +85,16 @@ server.tool(
 );
 
 // Error handling
-server.server.onerror = (error) => console.error('[MCP Error]', error);
+server.server.onerror = (error) => console.error('[research-mcp]', error);
 process.on('SIGINT', async () => {
   await server.close();
   process.exit(0);
 });
 
-// Start server
-async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('Research MCP server running on stdio');
-  console.error(`Contact email: ${contactEmail || 'not set'}`);
-}
-
-main().catch(console.error);
+// Start server with dual transport support (stdio or http)
+// Set TRANSPORT=http and PORT=8005 for Docker/remote deployment
+console.error(`Contact email: ${contactEmail || 'not set (set CONTACT_EMAIL for polite access)'}`);
+startServer(server, { serverName: 'research-mcp' }).catch((error) => {
+  console.error('[research-mcp] fatal', error);
+  process.exit(1);
+});

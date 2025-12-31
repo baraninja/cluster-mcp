@@ -1,6 +1,8 @@
 # Cluster MCP - Ultimate Research Data Suite
 
-A comprehensive monorepo containing six specialized MCP servers for researchers and analysts:
+A comprehensive monorepo containing six specialized MCP servers for researchers and analysts.
+
+**MCP Protocol**: 2025-11-25 | **Transport**: stdio + Streamable HTTP | **SDK**: @modelcontextprotocol/sdk v1.25+
 
 ## 🔬 Servers
 
@@ -54,7 +56,13 @@ npm install
 npm run build
 ```
 
-### Claude Desktop Configuration 
+### Transport Modes
+
+All servers support **dual transport**:
+- **stdio** (default): For local CLI usage with Claude Desktop
+- **http**: Streamable HTTP for remote/Docker deployment
+
+### Claude Desktop Configuration (stdio)
 Add to your `claude_desktop_config.json`:
 
 ```json
@@ -90,6 +98,55 @@ Add to your `claude_desktop_config.json`:
         "COMTRADE_API_KEY": "your-comtrade-key",
         "COMTRADE_BASE_URL": "https://comtradeapi.un.org/data/v1/" 
       }
+    }
+  }
+}
+```
+
+### Docker Deployment (HTTP)
+
+Run all servers with Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+This starts all 6 servers on ports 8001-8006:
+
+| Server | Port | Health Check |
+|--------|------|--------------|
+| socioeconomy-mcp | 8001 | http://localhost:8001/health |
+| research-mcp | 8002 | http://localhost:8002/health |
+| news-mcp | 8003 | http://localhost:8003/health |
+| health-mcp | 8004 | http://localhost:8004/health |
+| environment-mcp | 8005 | http://localhost:8005/health |
+| trade-mcp | 8006 | http://localhost:8006/health |
+
+Each server exposes:
+- `/health` - Health check endpoint
+- `/mcp` - MCP Streamable HTTP endpoint
+- `/` - Server info
+
+#### Run a Single Server
+
+```bash
+# Build and run with Docker
+docker build -f servers/research-mcp/Dockerfile -t research-mcp .
+docker run -p 8002:8005 -e CONTACT_EMAIL=you@example.com research-mcp
+
+# Or run directly with Node
+TRANSPORT=http PORT=8005 node servers/research-mcp/dist/server.js
+```
+
+#### Connect HTTP Clients
+
+For MCP clients that support HTTP transport:
+
+```json
+{
+  "mcpServers": {
+    "research-mcp": {
+      "url": "http://localhost:8002/mcp"
     }
   }
 }
@@ -192,9 +249,18 @@ cluster-mcp/
 
 ### Recommended Environment Variables
 ```bash
-# research-mcp: Used for Crossref/OpenAlex polite access  
+# Transport configuration (all servers)
+TRANSPORT=stdio          # 'stdio' (default) or 'http'
+PORT=8005                # HTTP port (default: 8005)
+HOST=0.0.0.0             # HTTP host (default: 0.0.0.0)
+
+# research-mcp: Used for Crossref/OpenAlex polite access
 CONTACT_EMAIL=your.email@domain.com
+
+# environment-mcp: OpenAQ API key
 OPENAQ_API_KEY=your-openaq-key
+
+# trade-mcp: UN Comtrade credentials
 COMTRADE_API_KEY=your-comtrade-key
 COMTRADE_BASE_URL=https://comtradeapi.un.org/data/v1/
 
@@ -227,7 +293,8 @@ The socioeconomy server includes 15 pre-mapped indicators with routing across pr
 
 ### Core Package (`@cluster-mcp/core`)
 Shared utilities including:
-- HTTP client with retry logic  
+- **Transport**: Dual transport support (stdio + Streamable HTTP)
+- HTTP client with retry logic
 - JSON-stat & SDMX-JSON parsers
 - Provider routing & equivalence mapping
 - In-memory caching system
@@ -269,14 +336,13 @@ MIT License - see individual server README files for detailed API documentation.
 
 ## 🔮 Roadmap
 
-### v1.1 (Planned)
-- OECD SDMX full implementation  
-- ILO SDMX updated endpoints
-- Environment MCP (OpenAQ air quality)
-- Health MCP (WHO GHO indicators)
-- Trade MCP (UN Comtrade with API keys)
+### v1.1 (Current)
+- Dual transport support (stdio + Streamable HTTP)
+- Docker deployment with health checks
+- All 6 servers fully implemented
 
 ### v2.0 (Future)
 - NUTS/SCB regional coding
 - Advanced caching with SQLite
-- WebSocket streaming for real-time data
+- Kubernetes deployment manifests
+- OAuth 2.1 authentication support

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { startServer } from '@cluster-mcp/core';
 
 import { getSeries, getSeriesSchema } from './tools/get_series.js';
 import { getSeriesBatch, getSeriesBatchSchema } from './tools/get_series_batch.js';
@@ -137,17 +137,15 @@ server.tool(
 );
 
 // Error handling
-server.server.onerror = (error) => console.error('[MCP Error]', error);
+server.server.onerror = (error) => console.error('[socioeconomy-mcp]', error);
 process.on('SIGINT', async () => {
   await server.close();
   process.exit(0);
 });
 
-// Start server
-async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('Socioeconomy MCP server running on stdio');
-}
-
-main().catch(console.error);
+// Start server with dual transport support (stdio or http)
+// Set TRANSPORT=http and PORT=8005 for Docker/remote deployment
+startServer(server, { serverName: 'socioeconomy-mcp' }).catch((error) => {
+  console.error('[socioeconomy-mcp] fatal', error);
+  process.exit(1);
+});

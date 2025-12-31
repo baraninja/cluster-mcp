@@ -1,0 +1,58 @@
+# Dockerfile Template for MCP Servers
+# Replace {SERVER_NAME} with: socioeconomy-mcp, research-mcp, news-mcp, health-mcp, environment-mcp, trade-mcp
+#
+# Build: docker build -f servers/{SERVER_NAME}/Dockerfile -t {SERVER_NAME} .
+# Run:   docker run -p 8005:8005 -e TRANSPORT=http {SERVER_NAME}
+
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+# Copy workspace files
+COPY package*.json ./
+COPY packages/core/package*.json ./packages/core/
+COPY servers/{SERVER_NAME}/package*.json ./servers/{SERVER_NAME}/
+
+# Install dependencies
+RUN npm ci --workspace=@cluster-mcp/core --workspace={SERVER_NAME}
+
+# Copy source code
+COPY packages/core/ ./packages/core/
+COPY servers/{SERVER_NAME}/ ./servers/{SERVER_NAME}/
+
+# Build core first, then the server
+RUN npm run build --workspace=@cluster-mcp/core && \
+    npm run build --workspace={SERVER_NAME}
+
+# Production stage
+FROM node:22-alpine AS production
+
+WORKDIR /app
+
+# Install production dependencies only
+COPY package*.json ./
+COPY packages/core/package*.json ./packages/core/
+COPY servers/{SERVER_NAME}/package*.json ./servers/{SERVER_NAME}/
+
+RUN npm ci --workspace=@cluster-mcp/core --workspace={SERVER_NAME} --omit=dev
+
+# Copy built files
+COPY --from=builder /app/packages/core/dist/ ./packages/core/dist/
+COPY --from=builder /app/packages/core/data/ ./packages/core/data/
+COPY --from=builder /app/servers/{SERVER_NAME}/dist/ ./servers/{SERVER_NAME}/dist/
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV TRANSPORT=http
+ENV PORT=8005
+ENV HOST=0.0.0.0
+
+# Expose port
+EXPOSE 8005
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD wget -q -O- http://localhost:8005/health || exit 1
+
+# Run the server
+CMD ["node", "servers/{SERVER_NAME}/dist/server.js"]

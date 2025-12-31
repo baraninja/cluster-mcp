@@ -1,0 +1,137 @@
+# Docker Compose for MCP Researcher Cluster
+# Run all 6 servers as HTTP endpoints for remote access
+#
+# Usage:
+#   docker compose up -d          # Start all servers
+#   docker compose up research    # Start only research-mcp
+#   docker compose logs -f        # View logs
+#   docker compose down           # Stop all
+
+services:
+  socioeconomy:
+    build:
+      context: .
+      dockerfile: servers/socioeconomy-mcp/Dockerfile
+    container_name: socioeconomy-mcp
+    restart: unless-stopped
+    environment:
+      - TRANSPORT=http
+      - PORT=8005
+      - HOST=0.0.0.0
+    ports:
+      - "8001:8005"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - mcp-network
+
+  research:
+    build:
+      context: .
+      dockerfile: servers/research-mcp/Dockerfile
+    container_name: research-mcp
+    restart: unless-stopped
+    environment:
+      - TRANSPORT=http
+      - PORT=8005
+      - HOST=0.0.0.0
+      - CONTACT_EMAIL=${CONTACT_EMAIL:-}
+    ports:
+      - "8002:8005"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - mcp-network
+
+  news:
+    build:
+      context: .
+      dockerfile: servers/news-mcp/Dockerfile
+    container_name: news-mcp
+    restart: unless-stopped
+    environment:
+      - TRANSPORT=http
+      - PORT=8005
+      - HOST=0.0.0.0
+    ports:
+      - "8003:8005"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - mcp-network
+
+  health:
+    build:
+      context: .
+      dockerfile: servers/health-mcp/Dockerfile
+    container_name: health-mcp
+    restart: unless-stopped
+    environment:
+      - TRANSPORT=http
+      - PORT=8005
+      - HOST=0.0.0.0
+    ports:
+      - "8004:8005"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - mcp-network
+
+  environment:
+    build:
+      context: .
+      dockerfile: servers/environment-mcp/Dockerfile
+    container_name: environment-mcp
+    restart: unless-stopped
+    environment:
+      - TRANSPORT=http
+      - PORT=8005
+      - HOST=0.0.0.0
+      - OPENAQ_API_KEY=${OPENAQ_API_KEY:-}
+    ports:
+      - "8005:8005"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - mcp-network
+
+  trade:
+    build:
+      context: .
+      dockerfile: servers/trade-mcp/Dockerfile
+    container_name: trade-mcp
+    restart: unless-stopped
+    environment:
+      - TRANSPORT=http
+      - PORT=8005
+      - HOST=0.0.0.0
+      - COMTRADE_API_KEY=${COMTRADE_API_KEY:-}
+      - COMTRADE_BASE_URL=${COMTRADE_BASE_URL:-}
+    ports:
+      - "8006:8005"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge

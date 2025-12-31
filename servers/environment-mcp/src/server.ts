@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { startServer } from '@cluster-mcp/core';
 
 import {
   getAirQuality,
@@ -128,14 +128,9 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-// Start server
-async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('environment-mcp server ready on STDIO');
-}
-
-main().catch((error) => {
+// Start server with dual transport support (stdio or http)
+// Set TRANSPORT=http and PORT=8005 for Docker/remote deployment
+startServer(server, { serverName: 'environment-mcp' }).catch((error) => {
   console.error('[environment-mcp] fatal', error);
   process.exit(1);
 });

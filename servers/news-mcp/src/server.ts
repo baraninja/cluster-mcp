@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { startServer } from '@cluster-mcp/core';
 
 import { searchNews, searchNewsSchema } from './tools/search_news.js';
 import { timeline, timelineSchema } from './tools/timeline.js';
@@ -70,17 +70,15 @@ server.tool(
 );
 
 // Error handling
-server.server.onerror = (error) => console.error('[MCP Error]', error);
+server.server.onerror = (error) => console.error('[news-mcp]', error);
 process.on('SIGINT', async () => {
   await server.close();
   process.exit(0);
 });
 
-// Start server
-async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('News MCP server running on stdio');
-}
-
-main().catch(console.error);
+// Start server with dual transport support (stdio or http)
+// Set TRANSPORT=http and PORT=8005 for Docker/remote deployment
+startServer(server, { serverName: 'news-mcp' }).catch((error) => {
+  console.error('[news-mcp] fatal', error);
+  process.exit(1);
+});
