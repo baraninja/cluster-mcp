@@ -1,110 +1,100 @@
 #!/usr/bin/env node
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequest,
-  CallToolRequestSchema,
-  ListToolsRequestSchema
-} from '@modelcontextprotocol/sdk/types.js';
+
 import {
   searchIndicator,
-  searchIndicatorSchema,
-  searchIndicatorInputSchema
+  searchIndicatorSchema
 } from './tools/search_indicator.js';
 import {
   getSeries,
-  getSeriesSchema,
-  getSeriesInputSchema
+  getSeriesSchema
 } from './tools/get_series.js';
 import {
   compareCountries,
-  compareCountriesSchema,
-  compareCountriesInputSchema
+  compareCountriesSchema
 } from './tools/compare_countries.js';
 import {
   getMetadata,
-  getMetadataSchema,
-  getMetadataInputSchema
+  getMetadataSchema
 } from './tools/get_metadata.js';
 
-class HealthMcpServer {
-  private server: Server;
+// Create server with description (new in 2025-11-25)
+const server = new McpServer({
+  name: 'health-mcp',
+  version: '0.1.0',
+  description: 'Global health indicators from WHO, OECD, and World Bank with semantic routing'
+});
 
-  constructor() {
-    this.server = new Server(
-      {
-        name: 'health-mcp',
-        version: '0.1.0'
-      },
-      {
-        capabilities: {
-          tools: {}
-        }
-      }
-    );
+// Register tools with new API (prefixed names)
 
-    this.registerHandlers();
-    this.server.onerror = (error) => console.error('[health-mcp]', error);
-    process.on('SIGINT', async () => {
-      await this.server.close();
-      process.exit(0);
-    });
+server.tool(
+  'health_search_indicator',
+  {
+    q: searchIndicatorSchema.shape.q
+  },
+  async (params) => {
+    const result = await searchIndicator(searchIndicatorSchema.parse(params));
+    return result;
   }
+);
 
-  private registerHandlers() {
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [
-        this.describeTool('search_indicator', searchIndicatorInputSchema, 'Search for health indicators by keyword'),
-        this.describeTool('get_series', getSeriesInputSchema, 'Fetch a time series for a given health indicator'),
-        this.describeTool('compare_countries', compareCountriesInputSchema, 'Compare an indicator across multiple countries'),
-        this.describeTool('get_metadata', getMetadataInputSchema, 'Retrieve metadata for a specific indicator')
-      ]
-    }));
-
-    this.server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
-      const { name, arguments: args } = request.params;
-
-      try {
-        switch (name) {
-          case 'search_indicator':
-            return await searchIndicator(searchIndicatorSchema.parse(args));
-          case 'get_series':
-            return await getSeries(getSeriesSchema.parse(args));
-          case 'compare_countries':
-            return await compareCountries(compareCountriesSchema.parse(args));
-          case 'get_metadata':
-            return await getMetadata(getMetadataSchema.parse(args));
-          default:
-            throw new Error(`Unknown tool: ${name}`);
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        return {
-          content: [{ type: 'text' as const, text: `Error: ${message}` }],
-          isError: true
-        };
-      }
-    });
+server.tool(
+  'health_get_series',
+  {
+    semanticId: getSeriesSchema.shape.semanticId,
+    geo: getSeriesSchema.shape.geo,
+    years: getSeriesSchema.shape.years,
+    dim1: getSeriesSchema.shape.dim1,
+    prefer: getSeriesSchema.shape.prefer
+  },
+  async (params) => {
+    const result = await getSeries(getSeriesSchema.parse(params));
+    return result;
   }
+);
 
-  private describeTool(name: string, schema: Record<string, unknown>, description: string) {
-    return {
-      name,
-      description,
-      inputSchema: schema
-    };
+server.tool(
+  'health_compare_countries',
+  {
+    semanticId: compareCountriesSchema.shape.semanticId,
+    geos: compareCountriesSchema.shape.geos,
+    years: compareCountriesSchema.shape.years
+  },
+  async (params) => {
+    const result = await compareCountries(compareCountriesSchema.parse(params));
+    return result;
   }
+);
 
-  async run() {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error('health-mcp server ready on STDIO');
+server.tool(
+  'health_get_metadata',
+  {
+    provider: getMetadataSchema.shape.provider,
+    id: getMetadataSchema.shape.id
+  },
+  async (params) => {
+    const result = await getMetadata(getMetadataSchema.parse(params));
+    return result;
   }
+);
+
+// Error handling
+server.server.onerror = (error) => console.error('[health-mcp]', error);
+process.on('SIGINT', async () => {
+  await server.close();
+  process.exit(0);
+});
+
+// Start server
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error('health-mcp server ready on STDIO');
 }
 
-const server = new HealthMcpServer();
-server.run().catch((error) => {
+main().catch((error) => {
   console.error('[health-mcp] fatal', error);
   process.exit(1);
 });

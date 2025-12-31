@@ -1,95 +1,69 @@
 #!/usr/bin/env node
 
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequest,
-  CallToolRequestSchema,
-  ListToolsRequestSchema
-} from '@modelcontextprotocol/sdk/types.js';
 
 import {
   searchHsCode,
-  searchHsCodeSchema,
-  searchHsCodeInputSchema
+  searchHsCodeSchema
 } from './tools/search_hs_code.js';
 import {
   getTradeMatrix,
-  getTradeMatrixSchema,
-  getTradeMatrixInputSchema
+  getTradeMatrixSchema
 } from './tools/get_trade_matrix.js';
 
-class TradeMcpServer {
-  private server: Server;
+// Create server with description (new in 2025-11-25)
+const server = new McpServer({
+  name: 'trade-mcp',
+  version: '0.1.0',
+  description: 'International trade statistics via UN Comtrade with HS commodity codes'
+});
 
-  constructor() {
-    this.server = new Server(
-      {
-        name: 'trade-mcp',
-        version: '0.1.0'
-      },
-      {
-        capabilities: {
-          tools: {}
-        }
-      }
-    );
+// Register tools with new API (prefixed names)
 
-    this.registerHandlers();
-    this.server.onerror = (error) => console.error('[trade-mcp]', error);
-    process.on('SIGINT', async () => {
-      await this.server.close();
-      process.exit(0);
-    });
+server.tool(
+  'trade_search_hs_code',
+  {
+    q: searchHsCodeSchema.shape.q,
+    year: searchHsCodeSchema.shape.year
+  },
+  async (params) => {
+    const result = await searchHsCode(searchHsCodeSchema.parse(params));
+    return result;
   }
+);
 
-  private registerHandlers() {
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [
-        this.describeTool('search_hs_code', searchHsCodeInputSchema, 'Search Harmonised System commodity codes'),
-        this.describeTool('get_trade_matrix', getTradeMatrixInputSchema, 'Fetch bilateral trade values for a given flow')
-      ]
-    }));
-
-    this.server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
-      const { name, arguments: args } = request.params;
-
-      try {
-        switch (name) {
-          case 'search_hs_code':
-            return await searchHsCode(searchHsCodeSchema.parse(args));
-          case 'get_trade_matrix':
-            return await getTradeMatrix(getTradeMatrixSchema.parse(args));
-          default:
-            throw new Error(`Unknown tool: ${name}`);
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        return {
-          content: [{ type: 'text' as const, text: `Error: ${message}` }],
-          isError: true
-        };
-      }
-    });
+server.tool(
+  'trade_get_matrix',
+  {
+    year: getTradeMatrixSchema.shape.year,
+    reporter: getTradeMatrixSchema.shape.reporter,
+    partner: getTradeMatrixSchema.shape.partner,
+    flow: getTradeMatrixSchema.shape.flow,
+    hs: getTradeMatrixSchema.shape.hs,
+    frequency: getTradeMatrixSchema.shape.frequency
+  },
+  async (params) => {
+    const result = await getTradeMatrix(getTradeMatrixSchema.parse(params));
+    return result;
   }
+);
 
-  private describeTool(name: string, schema: Record<string, unknown>, description: string) {
-    return {
-      name,
-      description,
-      inputSchema: schema
-    };
-  }
+// Error handling
+server.server.onerror = (error) => console.error('[trade-mcp]', error);
+process.on('SIGINT', async () => {
+  await server.close();
+  process.exit(0);
+});
 
-  async run() {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error('trade-mcp server ready on STDIO');
-  }
+// Start server
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  console.error('trade-mcp server ready on STDIO');
 }
 
-const server = new TradeMcpServer();
-server.run().catch((error) => {
+main().catch((error) => {
   console.error('[trade-mcp] fatal', error);
   process.exit(1);
 });

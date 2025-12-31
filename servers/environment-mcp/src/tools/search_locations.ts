@@ -16,7 +16,8 @@ const coordinatesSchema = z.object({
   radiusKm: z.number().positive().max(25).optional()
 });
 
-export const searchLocationsSchema = z.object({
+// Base schema (without refinement) for McpServer tool registration
+export const searchLocationsBaseSchema = z.object({
   parameter: z.string().optional().describe('Pollutant or measurement parameter (e.g. pm25, no2)'),
   country: z.string().optional().describe('ISO country code (any format; auto-mapped to ISO2)'),
   city: z.string().optional().describe('City name filter'),
@@ -24,9 +25,13 @@ export const searchLocationsSchema = z.object({
   coordinates: coordinatesSchema.optional().describe('Latitude/longitude (+optional radiusKm) for radial search'),
   limit: z.number().int().min(1).max(1000).optional().describe('Maximum number of locations (default 50)'),
   includeSensors: z.boolean().optional().describe('Whether to include sensor metadata in results (default true)')
-}).refine((data) => !(data.bbox && data.coordinates), {
-  message: 'Provide either bbox or coordinates, not both'
 });
+
+// Full schema with cross-field validation
+export const searchLocationsSchema = searchLocationsBaseSchema.refine(
+  (data) => !(data.bbox && data.coordinates),
+  { message: 'Provide either bbox or coordinates, not both' }
+);
 
 export type SearchLocationsParams = z.infer<typeof searchLocationsSchema>;
 
