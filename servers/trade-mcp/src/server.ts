@@ -11,6 +11,10 @@ import {
   getTradeMatrix,
   getTradeMatrixSchema
 } from './tools/get_trade_matrix.js';
+import {
+  listHsChapters,
+  listHsChaptersSchema
+} from './tools/list_hs_chapters.js';
 
 // Create server with description (new in 2025-11-25)
 const server = new McpServer({
@@ -45,6 +49,17 @@ server.tool(
   },
   async (params) => {
     const result = await getTradeMatrix(getTradeMatrixSchema.parse(params));
+    return result;
+  }
+);
+
+server.tool(
+  'trade_list_hs_chapters',
+  {
+    section: listHsChaptersSchema.shape.section
+  },
+  async (params) => {
+    const result = await listHsChapters(listHsChaptersSchema.parse(params));
     return result;
   }
 );

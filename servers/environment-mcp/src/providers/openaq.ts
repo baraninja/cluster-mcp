@@ -50,6 +50,108 @@ const PARAMETER_IDS: Record<string, number> = {
   pm1: 19
 };
 
+// Known city coordinates for countries with poor OpenAQ city tagging
+// Format: { country: { city: { lat, lon, radiusKm } } }
+const CITY_COORDINATES: Record<string, Record<string, { lat: number; lon: number; radiusKm?: number }>> = {
+  SE: {
+    stockholm: { lat: 59.33, lon: 18.07, radiusKm: 15 },
+    göteborg: { lat: 57.71, lon: 11.97, radiusKm: 12 },
+    gothenburg: { lat: 57.71, lon: 11.97, radiusKm: 12 },
+    malmö: { lat: 55.60, lon: 13.00, radiusKm: 10 },
+    malmo: { lat: 55.60, lon: 13.00, radiusKm: 10 },
+    uppsala: { lat: 59.86, lon: 17.64, radiusKm: 8 },
+    västerås: { lat: 59.61, lon: 16.55, radiusKm: 8 },
+    vasteras: { lat: 59.61, lon: 16.55, radiusKm: 8 },
+    örebro: { lat: 59.27, lon: 15.21, radiusKm: 8 },
+    orebro: { lat: 59.27, lon: 15.21, radiusKm: 8 },
+    linköping: { lat: 58.41, lon: 15.62, radiusKm: 8 },
+    linkoping: { lat: 58.41, lon: 15.62, radiusKm: 8 },
+    helsingborg: { lat: 56.05, lon: 12.69, radiusKm: 8 },
+    jönköping: { lat: 57.78, lon: 14.16, radiusKm: 8 },
+    jonkoping: { lat: 57.78, lon: 14.16, radiusKm: 8 },
+    norrköping: { lat: 58.59, lon: 16.18, radiusKm: 8 },
+    norrkoping: { lat: 58.59, lon: 16.18, radiusKm: 8 },
+    lund: { lat: 55.70, lon: 13.19, radiusKm: 6 },
+    umeå: { lat: 63.83, lon: 20.26, radiusKm: 8 },
+    umea: { lat: 63.83, lon: 20.26, radiusKm: 8 },
+    gävle: { lat: 60.67, lon: 17.14, radiusKm: 8 },
+    gavle: { lat: 60.67, lon: 17.14, radiusKm: 8 },
+    borås: { lat: 57.72, lon: 12.94, radiusKm: 8 },
+    boras: { lat: 57.72, lon: 12.94, radiusKm: 8 },
+    sundsvall: { lat: 62.39, lon: 17.31, radiusKm: 8 },
+    eskilstuna: { lat: 59.37, lon: 16.51, radiusKm: 8 },
+    karlstad: { lat: 59.38, lon: 13.50, radiusKm: 8 },
+    täby: { lat: 59.44, lon: 18.07, radiusKm: 5 },
+    taby: { lat: 59.44, lon: 18.07, radiusKm: 5 },
+    solna: { lat: 59.36, lon: 18.00, radiusKm: 5 },
+    nacka: { lat: 59.31, lon: 18.16, radiusKm: 5 }
+  },
+  NO: {
+    oslo: { lat: 59.91, lon: 10.75, radiusKm: 12 },
+    bergen: { lat: 60.39, lon: 5.32, radiusKm: 10 },
+    trondheim: { lat: 63.43, lon: 10.40, radiusKm: 10 },
+    stavanger: { lat: 58.97, lon: 5.73, radiusKm: 8 }
+  },
+  DK: {
+    copenhagen: { lat: 55.68, lon: 12.57, radiusKm: 12 },
+    københavn: { lat: 55.68, lon: 12.57, radiusKm: 12 },
+    kobenhavn: { lat: 55.68, lon: 12.57, radiusKm: 12 },
+    aarhus: { lat: 56.15, lon: 10.21, radiusKm: 10 },
+    odense: { lat: 55.40, lon: 10.39, radiusKm: 8 }
+  },
+  FI: {
+    helsinki: { lat: 60.17, lon: 24.94, radiusKm: 12 },
+    espoo: { lat: 60.21, lon: 24.66, radiusKm: 10 },
+    tampere: { lat: 61.50, lon: 23.76, radiusKm: 10 },
+    vantaa: { lat: 60.29, lon: 25.04, radiusKm: 8 },
+    oulu: { lat: 65.01, lon: 25.47, radiusKm: 10 },
+    turku: { lat: 60.45, lon: 22.27, radiusKm: 8 }
+  }
+};
+
+/**
+ * Look up known coordinates for a city in a country.
+ * Returns undefined if city is not in our mapping.
+ */
+function getCityCoordinates(city: string, countryCode?: string): { lat: number; lon: number; radiusKm: number } | undefined {
+  const cityLower = city.toLowerCase().trim();
+
+  // If country is specified, only look in that country
+  if (countryCode) {
+    const countryUpper = countryCode.toUpperCase();
+    const countryMap = CITY_COORDINATES[countryUpper];
+    if (countryMap && countryMap[cityLower]) {
+      const coords = countryMap[cityLower];
+      return { lat: coords.lat, lon: coords.lon, radiusKm: coords.radiusKm ?? 10 };
+    }
+    return undefined;
+  }
+
+  // Search all countries
+  for (const [, countryMap] of Object.entries(CITY_COORDINATES)) {
+    if (countryMap[cityLower]) {
+      const coords = countryMap[cityLower];
+      return { lat: coords.lat, lon: coords.lon, radiusKm: coords.radiusKm ?? 10 };
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Calculate distance in km between two coordinates (Haversine formula)
+ */
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 function getOpenAQCountryInfo(code?: string): OpenAQCountryEntry | undefined {
   if (!code) return undefined;
   const trimmed = code.trim();
@@ -312,9 +414,21 @@ export async function fetchLatest(
 export async function searchLocations(params: SearchLocationsParams): Promise<OpenAQLocationSearchResult> {
   const isoCountry = params.country ? mapRegionCode(params.country, 'ISO2') ?? params.country : undefined;
   const requestLimit = Math.min(params.limit ?? 50, 1000);
-  const maxPages = 5;
-  const baseParams = new URLSearchParams({ limit: String(requestLimit) });
   const countryInfo = getOpenAQCountryInfo(isoCountry ?? params.country);
+
+  // Pre-check if we'll use coordinate filtering (need to fetch more pages)
+  const willUseCoordFilter = params.city
+    ? getCityCoordinates(params.city, isoCountry ?? countryInfo?.code) !== undefined
+    : false;
+
+  // When coordinate filtering is active, fetch more data internally
+  // since we'll filter out many results based on distance
+  const internalFetchLimit = willUseCoordFilter
+    ? Math.max(requestLimit * 4, 100)  // Fetch 4x more, minimum 100
+    : requestLimit;
+  const maxPages = willUseCoordFilter ? 5 : 5;  // Could increase for coord filter if needed
+
+  const baseParams = new URLSearchParams({ limit: String(internalFetchLimit) });
 
   if (params.includeSensors ?? true) {
     baseParams.set('include', 'sensors');
@@ -344,9 +458,18 @@ export async function searchLocations(params: SearchLocationsParams): Promise<Op
     baseParams.set('countries_id', String(countryInfo.id));
   }
 
-  if (params.city) {
+  // Check if we have coordinate mapping for this city
+  // If so, DON'T send city to API - OpenAQ tagging is inconsistent
+  // We'll filter by coordinates client-side instead
+  const cityCoordsFallback = params.city
+    ? getCityCoordinates(params.city, isoCountry ?? countryInfo?.code)
+    : undefined;
+
+  if (params.city && !cityCoordsFallback) {
+    // No coordinate mapping - let OpenAQ try to filter by city name
     baseParams.set('city', params.city);
   }
+  // If cityCoordsFallback exists, we skip sending city param and filter client-side
 
   if (params.bbox) {
     const { west, south, east, north } = params.bbox;
@@ -372,7 +495,8 @@ export async function searchLocations(params: SearchLocationsParams): Promise<Op
   let apiMeta: Record<string, unknown> | undefined;
 
   for (let page = 1; page <= maxPages; page++) {
-    if (Object.keys(collected).length >= requestLimit) break;
+    // Use internalFetchLimit for breaking - we may need more data for coordinate filtering
+    if (Object.keys(collected).length >= internalFetchLimit) break;
 
     const searchParams = new URLSearchParams(baseParams);
     searchParams.set('page', String(page));
@@ -460,25 +584,92 @@ export async function searchLocations(params: SearchLocationsParams): Promise<Op
 
     if (params.city) {
       const cityNeedle = params.city.trim().toLowerCase();
-      const exactMatches = filtered.filter((location: OpenAQSiteSummary) => location.city?.toLowerCase() === cityNeedle);
-      if (exactMatches.length > 0) {
-        filtered = exactMatches;
-      } else {
-        filtered = filtered.filter((location: OpenAQSiteSummary) =>
-          location.city?.toLowerCase().includes(cityNeedle)
-        );
-      }
-      metadataFilters.cityExactMatch = exactMatches.length > 0;
       metadataFilters.cityQuery = cityNeedle;
+
+      // Helper to check if location matches city search by name
+      const matchesCity = (loc: OpenAQSiteSummary): boolean => {
+        // Check city field
+        if (loc.city?.toLowerCase().includes(cityNeedle)) return true;
+        // Check location name (often contains city, e.g., "Hornsgatan, Stockholm")
+        if (loc.location?.toLowerCase().includes(cityNeedle)) return true;
+        return false;
+      };
+
+      // Try exact city field match first
+      const exactCityMatches = filtered.filter((loc: OpenAQSiteSummary) =>
+        loc.city?.toLowerCase() === cityNeedle
+      );
+
+      if (exactCityMatches.length > 0) {
+        filtered = exactCityMatches;
+        metadataFilters.cityMatchMethod = 'exact';
+      } else {
+        // Try partial name match in city or location name
+        const partialMatches = filtered.filter(matchesCity);
+        if (partialMatches.length > 0) {
+          filtered = partialMatches;
+          metadataFilters.cityMatchMethod = 'partial';
+          metadataFilters.cityMatchedInLocation = partialMatches.some(
+            (loc: OpenAQSiteSummary) => !loc.city?.toLowerCase().includes(cityNeedle) &&
+                                        loc.location?.toLowerCase().includes(cityNeedle)
+          );
+        } else {
+          // Fallback: Use coordinate-based filtering if we have city coordinates
+          // (cityCoordsFallback was pre-computed above to decide whether to send city to API)
+          if (cityCoordsFallback) {
+            const cityCoords = cityCoordsFallback;
+            // Filter locations within radius of city center
+            const coordinateMatches = filtered
+              .filter((loc: OpenAQSiteSummary) =>
+                loc.latitude !== undefined && loc.longitude !== undefined
+              )
+              .map((loc: OpenAQSiteSummary) => {
+                const dist = haversineDistance(
+                  cityCoords.lat, cityCoords.lon,
+                  loc.latitude!, loc.longitude!
+                );
+                return { loc, distance: dist };
+              })
+              .filter((item: { loc: OpenAQSiteSummary; distance: number }) => item.distance <= cityCoords.radiusKm)
+              .sort((a: { loc: OpenAQSiteSummary; distance: number }, b: { loc: OpenAQSiteSummary; distance: number }) => a.distance - b.distance)
+              .map((item: { loc: OpenAQSiteSummary; distance: number }) => item.loc);
+
+            if (coordinateMatches.length > 0) {
+              filtered = coordinateMatches;
+              metadataFilters.cityMatchMethod = 'coordinates';
+              metadataFilters.cityCoordinates = {
+                lat: cityCoords.lat,
+                lon: cityCoords.lon,
+                radiusKm: cityCoords.radiusKm
+              };
+              metadataFilters.note = `City "${params.city}" matched via coordinates (${cityCoords.radiusKm}km radius). OpenAQ may not tag stations with city names for this region.`;
+            } else {
+              // No matches even with coordinates - keep all country results but note it
+              metadataFilters.cityMatchMethod = 'none';
+              metadataFilters.cityCoordinates = {
+                lat: cityCoords.lat,
+                lon: cityCoords.lon,
+                radiusKm: cityCoords.radiusKm
+              };
+              metadataFilters.warning = `No stations found within ${cityCoords.radiusKm}km of ${params.city}. Returning all results for the country.`;
+            }
+          } else {
+            // No coordinate mapping available for this city
+            metadataFilters.cityMatchMethod = 'none';
+            metadataFilters.warning = `City "${params.city}" not found in OpenAQ data and no coordinate mapping available. Consider using coordinates parameter directly. Returning all results for the country.`;
+          }
+        }
+      }
     }
 
     for (const location of filtered) {
       if (collected[location.locationId]) continue;
       collected[location.locationId] = location;
-      if (Object.keys(collected).length >= requestLimit) break;
+      if (Object.keys(collected).length >= internalFetchLimit) break;
     }
 
-    if (rows.length < requestLimit) {
+    if (rows.length < internalFetchLimit) {
+      // No more pages available
       break;
     }
   }
@@ -495,6 +686,9 @@ export async function searchLocations(params: SearchLocationsParams): Promise<Op
       totalFound: totalRaw,
       filteredCount: finalResults.length,
       pagesFetched,
+      fetchStrategy: willUseCoordFilter
+        ? { mode: 'expanded', internalLimit: internalFetchLimit, userLimit: requestLimit }
+        : { mode: 'standard', limit: requestLimit },
       filters: {
         ...metadataFilters,
         countryMapping: countryInfo ? { id: countryInfo.id, code: countryInfo.code, name: countryInfo.name } : null

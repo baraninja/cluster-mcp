@@ -3,19 +3,59 @@ import type { Work } from '@cluster-mcp/core';
 
 const BASE = 'https://api.openalex.org';
 
-export async function searchWorks(query: string, contactEmail?: string) {
+export interface SearchWorksOptions {
+  yearFrom?: number;
+  yearTo?: number;
+  minCitations?: number;
+  oaOnly?: boolean;
+  sort?: 'relevance' | 'date' | 'cited_by_count';
+  limit?: number;
+}
+
+export async function searchWorks(query: string, contactEmail?: string, options?: SearchWorksOptions) {
+  const filters: string[] = [];
+
+  if (options?.yearFrom && options?.yearTo) {
+    filters.push(`publication_year:${options.yearFrom}-${options.yearTo}`);
+  } else if (options?.yearFrom) {
+    filters.push(`publication_year:>=${options.yearFrom}`);
+  } else if (options?.yearTo) {
+    filters.push(`publication_year:<=${options.yearTo}`);
+  }
+
+  if (options?.minCitations) {
+    filters.push(`cited_by_count:>=${options.minCitations}`);
+  }
+
+  if (options?.oaOnly) {
+    filters.push('is_oa:true');
+  }
+
   const params = new URLSearchParams({
     search: query,
-    'per-page': '25'
+    'per-page': String(options?.limit ?? 25)
   });
-  
+
+  if (filters.length > 0) {
+    params.set('filter', filters.join(','));
+  }
+
+  if (options?.sort) {
+    const sortMap: Record<string, string> = {
+      relevance: 'relevance_score:desc',
+      date: 'publication_date:desc',
+      cited_by_count: 'cited_by_count:desc'
+    };
+    params.set('sort', sortMap[options.sort] ?? 'relevance_score:desc');
+  }
+
   if (contactEmail) {
     params.set('mailto', contactEmail);
   }
-  
+
   const url = `${BASE}/works?${params}`;
   const headers = { 'User-Agent': buildUserAgent(contactEmail) };
-  
+
   const { json } = await getWithRetry(() => getJSON(url, headers));
   return (json as any)?.results ?? (json as any)?.data ?? [];
 }

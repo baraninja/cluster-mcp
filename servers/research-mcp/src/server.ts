@@ -13,7 +13,19 @@ const contactEmail = process.env.CONTACT_EMAIL;
 
 // Schemas for tool inputs
 const searchPapersSchema = z.object({
-  q: z.string().min(1).describe('Search query for academic papers')
+  q: z.string().min(1).describe('Search query for academic papers'),
+  yearFrom: z.number().int().min(1900).max(2100).optional()
+    .describe('Filter: minimum publication year (e.g., 2020)'),
+  yearTo: z.number().int().min(1900).max(2100).optional()
+    .describe('Filter: maximum publication year (e.g., 2024)'),
+  minCitations: z.number().int().min(0).optional()
+    .describe('Filter: minimum citation count (e.g., 10 for well-cited papers)'),
+  oaOnly: z.boolean().optional()
+    .describe('Filter: only return open access papers'),
+  sort: z.enum(['relevance', 'date', 'cited_by_count']).optional()
+    .describe('Sort results by: relevance (default), date (newest first), or cited_by_count (most cited first)'),
+  limit: z.number().int().min(1).max(100).optional()
+    .describe('Maximum number of results (default 25, max 100)')
 });
 
 const getPaperSchema = z.object({
@@ -36,7 +48,13 @@ const server = new McpServer({
 server.tool(
   'research_search_papers',
   {
-    q: searchPapersSchema.shape.q
+    q: searchPapersSchema.shape.q,
+    yearFrom: searchPapersSchema.shape.yearFrom,
+    yearTo: searchPapersSchema.shape.yearTo,
+    minCitations: searchPapersSchema.shape.minCitations,
+    oaOnly: searchPapersSchema.shape.oaOnly,
+    sort: searchPapersSchema.shape.sort,
+    limit: searchPapersSchema.shape.limit
   },
   async (params) => {
     const result = await searchPapers(searchPapersSchema.parse(params), contactEmail);

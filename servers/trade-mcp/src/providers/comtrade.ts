@@ -89,16 +89,13 @@ export async function searchHsCodes(params: SearchHsCodeParams): Promise<HsCodeR
   const query = params.q.trim();
   if (!query) return [];
 
+  // 1. Try APIM first (requires API key, but actually searches)
   const apimResult = await searchApimHsCodes(query, params.year);
   if (apimResult.length) {
     return apimResult;
   }
 
-  const legacyResult = await searchLegacyHsCodes(query);
-  if (legacyResult.length) {
-    return legacyResult.slice(0, 25);
-  }
-
+  // 2. Try local catalog - this actually performs text search
   const catalogHits = await searchHsCatalog(query, 25);
   if (catalogHits.length) {
     return catalogHits.map((entry) => ({
@@ -107,9 +104,23 @@ export async function searchHsCodes(params: SearchHsCodeParams): Promise<HsCodeR
     }));
   }
 
+  // 3. Try keyword presets for common search terms
   const preset = KEYWORD_PRESETS[query.toLowerCase()];
   if (preset) {
     return preset;
+  }
+
+  // 4. Legacy API as last resort - filter results since API ignores query parameter
+  const legacyResult = await searchLegacyHsCodes(query);
+  if (legacyResult.length) {
+    const needle = query.toLowerCase();
+    const filtered = legacyResult.filter((item) =>
+      item.code.toLowerCase().includes(needle) ||
+      item.description.toLowerCase().includes(needle)
+    );
+    if (filtered.length) {
+      return filtered.slice(0, 25);
+    }
   }
 
   return [];

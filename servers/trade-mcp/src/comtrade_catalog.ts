@@ -16,21 +16,117 @@ const DATA_DIR = join(__dirname, 'comtrade_data');
 
 let hsCatalogPromise: Promise<HsCatalogEntry[]> | null = null;
 
+// Common synonyms/aliases for HS search terms
+const SEARCH_SYNONYMS: Record<string, string[]> = {
+  'electric vehicles': ['electric', 'motor vehicles', '8703'],
+  'ev': ['electric', 'motor vehicles'],
+  'cars': ['motor cars', 'motor vehicles', 'automobiles'],
+  'trucks': ['motor vehicles', 'goods', 'lorries'],
+  'phones': ['telephone', 'cellular', 'mobile'],
+  'computers': ['data-processing', 'automatic data processing'],
+  'laptops': ['portable', 'data-processing'],
+  'chips': ['integrated circuits', 'semiconductors'],
+  'semiconductors': ['integrated circuits', 'electronic'],
+  'timber': ['wood', 'sawn', 'lumber'],
+  'lumber': ['wood', 'sawn', 'timber'],
+  'beef': ['bovine', 'meat', 'cattle'],
+  'pork': ['swine', 'meat', 'pig'],
+  'chicken': ['poultry', 'fowls', 'meat'],
+  'medicines': ['medicaments', 'pharmaceutical'],
+  'drugs': ['medicaments', 'pharmaceutical'],
+  'clothing': ['garments', 'apparel', 'wearing'],
+  'clothes': ['garments', 'apparel', 'wearing']
+};
+
 export async function searchHsCatalog(query: string, limit = 25): Promise<HsCatalogEntry[]> {
   const trimmed = query.trim();
   if (!trimmed) return [];
   const catalog = await loadHsCatalog();
-  const needle = trimmed.toLowerCase();
-  const results: HsCatalogEntry[] = [];
 
-  for (const entry of catalog) {
-    if (entry.searchText.includes(needle) || entry.code.startsWith(needle)) {
-      results.push(entry);
+  // Check for synonym expansion
+  const lowerQuery = trimmed.toLowerCase();
+  const synonyms = SEARCH_SYNONYMS[lowerQuery];
+
+  // Split query into words for multi-word search
+  // Require words to be 3+ chars unless they're numeric (HS codes)
+  const words = trimmed.toLowerCase().split(/\s+/).filter(w =>
+    w.length >= 3 || /^\d+$/.test(w)
+  );
+
+  // Add synonym words if available
+  if (synonyms) {
+    for (const syn of synonyms) {
+      const synWords = syn.toLowerCase().split(/\s+/).filter(w => w.length > 1);
+      words.push(...synWords);
     }
-    if (results.length >= limit) break;
   }
 
-  return results;
+  // Deduplicate words
+  const uniqueWords = [...new Set(words)];
+
+  // Score and collect results
+  const scored: Array<{ entry: HsCatalogEntry; score: number }> = [];
+
+  // Only do exact phrase match for queries 3+ chars (avoid "ev" matching "beverages")
+  const doExactMatch = lowerQuery.length >= 3 || /^\d+$/.test(lowerQuery);
+
+  for (const entry of catalog) {
+    // Exact phrase match gets highest score
+    if (doExactMatch && (entry.searchText.includes(lowerQuery) || entry.code.startsWith(lowerQuery))) {
+      scored.push({ entry, score: 100 + uniqueWords.length });
+      continue;
+    }
+
+    // Count how many words match (OR logic with scoring)
+    let matchCount = 0;
+    for (const word of uniqueWords) {
+      if (entry.searchText.includes(word) || entry.code.includes(word)) {
+        matchCount++;
+      }
+    }
+
+    // Include if at least one word matches
+    if (matchCount > 0) {
+      // Score: more matching words = higher score
+      scored.push({ entry, score: matchCount });
+    }
+  }
+
+  // Sort by score descending, then by code for stability
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return a.entry.code.localeCompare(b.entry.code);
+  });
+
+  return scored.slice(0, limit).map(s => s.entry);
+}
+
+export interface HsChapter {
+  code: string;
+  description: string;
+}
+
+export async function getHsChapters(): Promise<HsChapter[]> {
+  const catalog = await loadHsCatalog();
+
+  // HS chapters are 2-digit codes (01-99)
+  const chapters = catalog
+    .filter(entry => /^\d{2}$/.test(entry.code))
+    .map(entry => {
+      // Clean up description - remove redundant code prefix if present
+      let desc = entry.text;
+      const codePrefix = `${entry.code} - `;
+      if (desc.startsWith(codePrefix)) {
+        desc = desc.slice(codePrefix.length);
+      }
+      return {
+        code: entry.code,
+        description: desc
+      };
+    })
+    .sort((a, b) => a.code.localeCompare(b.code));
+
+  return chapters;
 }
 
 async function loadHsCatalog(): Promise<HsCatalogEntry[]> {
