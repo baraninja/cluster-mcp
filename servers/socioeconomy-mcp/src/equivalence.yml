@@ -1,20 +1,13 @@
-# Semantic ID mappings across socioeconomic data providers
-# Format: semantic_id -> { provider_code, label, unit, notes }
+# ============================================================================
+# EXPANDED Semantic ID mappings for socioeconomy-mcp
+# ============================================================================
+# 80+ indicators mapped across World Bank, Eurostat, OECD, and ILO
+# Format: semantic_id -> { provider_codes, label, unit, description }
+# ============================================================================
 
-employment_rate_15_64:
-  label: "Employment rate, age 15-64"
-  unit: "%"
-  eurostat: "LFST_R_LFE2EMPRT"
-  wb: "SL.EMP.TOTL.SP.ZS"
-  description: "Employment as percentage of population aged 15-64"
-
-unemployment_rate:
-  label: "Unemployment rate"
-  unit: "%"
-  eurostat: "LFST_R_LFU3RT"
-  wb: "SL.UEM.TOTL.ZS"
-  oecd: "MEI_CLI.LMUNEMPRAW.M"
-  description: "Unemployed as percentage of total labor force"
+# ============================================================================
+# ECONOMIC INDICATORS - GDP & Growth
+# ============================================================================
 
 gdp_constant_prices:
   label: "GDP at constant prices"
@@ -23,6 +16,14 @@ gdp_constant_prices:
   oecd: "SNA_TABLE1.B1_GE.GDP.C"
   description: "Gross domestic product at constant 2015 US dollars"
 
+gdp_current_prices:
+  label: "GDP at current prices"
+  unit: "USD"
+  wb: "NY.GDP.MKTP.CD"
+  eurostat: "NAMA_10_GDP"
+  oecd: "SNA_TABLE1.B1_GE.GDP.V"
+  description: "Gross domestic product at current US dollars"
+
 gdp_per_capita_constant:
   label: "GDP per capita, constant prices"
   unit: "USD_2015"
@@ -30,26 +31,88 @@ gdp_per_capita_constant:
   oecd: "SNA_TABLE1.B1_GE.GDPPC.C"
   description: "GDP per capita at constant 2015 US dollars"
 
+gdp_per_capita_current:
+  label: "GDP per capita, current prices"
+  unit: "USD"
+  wb: "NY.GDP.PCAP.CD"
+  eurostat: "NAMA_10_PC"
+  description: "GDP per capita at current US dollars"
+
+gdp_per_capita_ppp:
+  label: "GDP per capita, PPP"
+  unit: "intl_dollar"
+  wb: "NY.GDP.PCAP.PP.KD"
+  oecd: "SNA_TABLE1.B1_GE.GDPPC.PPP"
+  description: "GDP per capita, purchasing power parity adjusted"
+
+gdp_growth_rate:
+  label: "GDP growth rate"
+  unit: "%"
+  wb: "NY.GDP.MKTP.KD.ZG"
+  eurostat: "NAMA_10_GDP"
+  oecd: "SNA_TABLE1.B1_GE.GR"
+  description: "Annual percentage growth rate of GDP at constant prices"
+
+gni_per_capita:
+  label: "GNI per capita"
+  unit: "USD"
+  wb: "NY.GNP.PCAP.CD"
+  description: "Gross national income per capita in current US dollars"
+
+gni_per_capita_ppp:
+  label: "GNI per capita, PPP"
+  unit: "intl_dollar"
+  wb: "NY.GNP.PCAP.PP.CD"
+  description: "GNI per capita, purchasing power parity"
+
+# ============================================================================
+# ECONOMIC INDICATORS - Inflation & Prices
+# ============================================================================
+
 inflation_cpi:
   label: "Consumer price inflation"
   unit: "%"
   wb: "FP.CPI.TOTL.ZG"
-  oecd: "MEI.CPALTT01.GY"
   eurostat: "PRC_HICP_AIND"
+  oecd: "MEI.CPALTT01.GY"
   description: "Annual percentage change in consumer prices"
 
-population_total:
-  label: "Total population"
-  unit: "persons"
-  wb: "SP.POP.TOTL"
-  oecd: "DSD_DEMOG.POP_TOT.A"
-  eurostat: "DEMO_R_PJANGRP3"
-  description: "Total population"
+inflation_gdp_deflator:
+  label: "Inflation, GDP deflator"
+  unit: "%"
+  wb: "NY.GDP.DEFL.KD.ZG"
+  description: "Annual percentage change in GDP deflator"
+
+consumer_price_index:
+  label: "Consumer price index"
+  unit: "index_2010"
+  wb: "FP.CPI.TOTL"
+  eurostat: "PRC_HICP_MIDX"
+  description: "Consumer price index (2010 = 100)"
+
+producer_price_index:
+  label: "Producer price index"
+  unit: "index"
+  eurostat: "STS_INPP_A"
+  oecd: "MEI_REAL.PIEATI01"
+  description: "Producer price index for industrial products"
+
+house_price_index:
+  label: "House price index"
+  unit: "index"
+  eurostat: "PRC_HPI_A"
+  oecd: "HOUSE_PRICES.HPI"
+  description: "Residential property price index"
+
+# ============================================================================
+# ECONOMIC INDICATORS - Trade & Investment
+# ============================================================================
 
 exports_goods_services:
   label: "Exports of goods and services"
   unit: "% of GDP"
   wb: "NE.EXP.GNFS.ZS"
+  eurostat: "NAMA_10_TRC"
   oecd: "SNA_TABLE1.P6.EXP.S"
   description: "Exports as percentage of GDP"
 
@@ -57,96 +120,23 @@ imports_goods_services:
   label: "Imports of goods and services"
   unit: "% of GDP"
   wb: "NE.IMP.GNFS.ZS"
+  eurostat: "NAMA_10_TRC"
   oecd: "SNA_TABLE1.P7.IMP.S"
   description: "Imports as percentage of GDP"
 
-government_debt:
-  label: "General government gross debt"
+trade_balance:
+  label: "Trade balance"
   unit: "% of GDP"
-  wb: "GC.DOD.TOTL.GD.ZS"
-  oecd: "EO109_INTERNET.GGFL.S"
-  eurostat: "GOV_10DD_EDPT1"
-  description: "Government debt as percentage of GDP"
+  wb: "NE.RSB.GNFS.ZS"
+  description: "Net exports (exports minus imports) as percentage of GDP"
 
-research_development:
-  label: "Research and development expenditure"
+current_account_balance:
+  label: "Current account balance"
   unit: "% of GDP"
-  wb: "GB.XPD.RSDV.GD.ZS"
-  oecd: "MSTI_PUB.GERD_TOT.PCT_GDP"
-  eurostat: "RD_E_GERDTOT"
-  description: "R&D expenditure as percentage of GDP"
-
-internet_users:
-  label: "Internet users"
-  unit: "% of population"
-  wb: "IT.NET.USER.ZS"
-  description: "Individuals using the Internet as percentage of population"
-
-education_tertiary:
-  label: "Tertiary education completion"
-  unit: "% of population"
-  wb: "SE.TER.CUAT.BA.ZS"
-  oecd: "EAG_NEAC.ISCED11_5T8.T.PC_25T64"
-  eurostat: "EDAT_LFS_9903"
-  description: "Tertiary education attainment among population aged 25-64"
-
-carbon_emissions:
-  label: "CO2 emissions"
-  unit: "metric tons per capita"
-  wb: "EN.ATM.CO2E.PC"
-  oecd: "AIR_GHGT.CO2.T_HAB"
-  description: "Carbon dioxide emissions per capita"
-
-life_expectancy:
-  label: "Life expectancy at birth"
-  unit: "years"
-  wb: "SP.DYN.LE00.IN"
-  oecd: "HEALTH_STAT.LIFEXP.TOT"
-  description: "Life expectancy at birth, total years"
-
-poverty_rate:
-  label: "Poverty headcount ratio"
-  unit: "% of population"
-  wb: "SI.POV.DDAY"
-  oecd: "IDD.POVRATE.I50"
-  description: "Population living below poverty line"
-
-energy_renewable:
-  label: "Renewable energy consumption"
-  unit: "% of total"
-  wb: "EG.FEC.RNEW.ZS"
-  oecd: "IEA_REN.RENEWELC.PC"
-  description: "Renewable energy as percentage of total energy consumption"
-
-population_density:
-  label: "Population density"
-  unit: "people per sq km"
-  wb: "EN.POP.DNST"
-  description: "Population density (people per sq km of land area)"
-
-urban_population:
-  label: "Urban population"
-  unit: "% of total"
-  wb: "SP.URB.TOTL.IN.ZS"
-  description: "Urban population as percentage of total population"
-
-rural_population:
-  label: "Rural population"
-  unit: "% of total"
-  wb: "SP.RUR.TOTL.ZS"
-  description: "Rural population as percentage of total population"
-
-wage_gap_gender:
-  label: "Gender wage gap"
-  unit: "%"
-  oecd: "EAR.GENDERWAGE_RT.A"
-  description: "Difference between male and female median earnings, expressed as a percentage of male earnings"
-
-minimum_wage:
-  label: "Minimum wage"
-  unit: "USD PPP"
-  oecd: "MIN2AVE.MIN_WAGE.A"
-  description: "Statutory minimum wage in purchasing power parity"
+  wb: "BN.CAB.XOKA.GD.ZS"
+  eurostat: "BOP_C6_A"
+  oecd: "MEI.BPCA.S"
+  description: "Current account balance as percentage of GDP"
 
 foreign_direct_investment:
   label: "Foreign direct investment, net inflows"
@@ -155,8 +145,711 @@ foreign_direct_investment:
   oecd: "FDI.FLOW_IIP4.A"
   description: "Net inflows of investment to acquire lasting management interest"
 
-trade_balance:
-  label: "Trade balance"
+fdi_outflows:
+  label: "Foreign direct investment, net outflows"
   unit: "% of GDP"
-  wb: "NE.RSB.GNFS.ZS"
-  description: "Net exports (exports minus imports) as percentage of GDP"
+  wb: "BM.KLT.DINV.WD.GD.ZS"
+  description: "Net outflows of investment from reporting economy"
+
+# ============================================================================
+# ECONOMIC INDICATORS - Public Finance
+# ============================================================================
+
+government_debt:
+  label: "General government gross debt"
+  unit: "% of GDP"
+  wb: "GC.DOD.TOTL.GD.ZS"
+  eurostat: "GOV_10DD_EDPT1"
+  oecd: "EO109_INTERNET.GGFL.S"
+  description: "Government debt as percentage of GDP"
+
+government_revenue:
+  label: "Government revenue"
+  unit: "% of GDP"
+  wb: "GC.REV.XGRT.GD.ZS"
+  eurostat: "GOV_10A_MAIN"
+  oecd: "REV.TOTREV.S"
+  description: "Government revenue as percentage of GDP"
+
+government_expenditure:
+  label: "Government expenditure"
+  unit: "% of GDP"
+  wb: "GC.XPN.TOTL.GD.ZS"
+  eurostat: "GOV_10A_MAIN"
+  oecd: "SNA_TABLE12.EXPEND.S"
+  description: "Government expenditure as percentage of GDP"
+
+tax_revenue:
+  label: "Tax revenue"
+  unit: "% of GDP"
+  wb: "GC.TAX.TOTL.GD.ZS"
+  eurostat: "GOV_10A_TAXAG"
+  oecd: "REV.TAXREV.S"
+  description: "Tax revenue as percentage of GDP"
+
+military_expenditure:
+  label: "Military expenditure"
+  unit: "% of GDP"
+  wb: "MS.MIL.XPND.GD.ZS"
+  description: "Military expenditure as percentage of GDP"
+
+# ============================================================================
+# LABOR MARKET - Employment
+# ============================================================================
+
+employment_rate_15_64:
+  label: "Employment rate, age 15-64"
+  unit: "%"
+  eurostat: "LFST_R_LFE2EMPRT"
+  wb: "SL.EMP.TOTL.SP.ZS"
+  oecd: "LFS_SEXAGE_I_R.ER"
+  ilostat: "EMP_DWAP_SEX_AGE_RT"
+  description: "Employment as percentage of population aged 15-64"
+
+employment_rate_20_64:
+  label: "Employment rate, age 20-64"
+  unit: "%"
+  eurostat: "LFSI_EMP_A"
+  description: "Employment as percentage of population aged 20-64 (EU target)"
+
+labor_force_participation:
+  label: "Labor force participation rate"
+  unit: "%"
+  wb: "SL.TLF.CACT.ZS"
+  eurostat: "LFSA_ARGAN"
+  oecd: "LFS_SEXAGE_I_R.LF"
+  ilostat: "EAP_DWAP_SEX_AGE_RT"
+  description: "Labor force as percentage of working-age population"
+
+labor_force_participation_female:
+  label: "Labor force participation rate, female"
+  unit: "%"
+  wb: "SL.TLF.CACT.FE.ZS"
+  eurostat: "LFSA_ARGAN"
+  ilostat: "EAP_DWAP_SEX_AGE_RT"
+  description: "Female labor force participation rate"
+
+labor_force_participation_male:
+  label: "Labor force participation rate, male"
+  unit: "%"
+  wb: "SL.TLF.CACT.MA.ZS"
+  eurostat: "LFSA_ARGAN"
+  ilostat: "EAP_DWAP_SEX_AGE_RT"
+  description: "Male labor force participation rate"
+
+employment_agriculture:
+  label: "Employment in agriculture"
+  unit: "% of total employment"
+  wb: "SL.AGR.EMPL.ZS"
+  eurostat: "LFSA_EGAN2"
+  ilostat: "EMP_TEMP_SEX_ECO_NB"
+  description: "Employment in agriculture as percentage of total"
+
+employment_industry:
+  label: "Employment in industry"
+  unit: "% of total employment"
+  wb: "SL.IND.EMPL.ZS"
+  eurostat: "LFSA_EGAN2"
+  ilostat: "EMP_TEMP_SEX_ECO_NB"
+  description: "Employment in industry as percentage of total"
+
+employment_services:
+  label: "Employment in services"
+  unit: "% of total employment"
+  wb: "SL.SRV.EMPL.ZS"
+  eurostat: "LFSA_EGAN2"
+  ilostat: "EMP_TEMP_SEX_ECO_NB"
+  description: "Employment in services as percentage of total"
+
+self_employment:
+  label: "Self-employed"
+  unit: "% of total employment"
+  wb: "SL.EMP.SELF.ZS"
+  eurostat: "LFSA_ESGAN2"
+  oecd: "LFS_SEXAGE_I_R.SELF"
+  description: "Self-employed as percentage of total employment"
+
+part_time_employment:
+  label: "Part-time employment"
+  unit: "% of total employment"
+  wb: "SL.TLF.PART.ZS"
+  eurostat: "LFSA_EPPGA"
+  oecd: "LFS_SEXAGE_I_R.PT"
+  description: "Part-time workers as percentage of total employment"
+
+temporary_employment:
+  label: "Temporary employment"
+  unit: "% of employees"
+  eurostat: "LFSA_ETPGA"
+  oecd: "TEMP_I"
+  description: "Temporary workers as percentage of total employees"
+
+# ============================================================================
+# LABOR MARKET - Unemployment
+# ============================================================================
+
+unemployment_rate:
+  label: "Unemployment rate"
+  unit: "%"
+  wb: "SL.UEM.TOTL.ZS"
+  eurostat: "LFST_R_LFU3RT"
+  oecd: "LFS_SEXAGE_I_R.UR"
+  ilostat: "UNE_DEAP_SEX_AGE_RT"
+  description: "Unemployed as percentage of total labor force"
+
+unemployment_rate_female:
+  label: "Unemployment rate, female"
+  unit: "%"
+  wb: "SL.UEM.TOTL.FE.ZS"
+  eurostat: "LFST_R_LFU3RT"
+  ilostat: "UNE_DEAP_SEX_AGE_RT"
+  description: "Female unemployment rate"
+
+unemployment_rate_male:
+  label: "Unemployment rate, male"
+  unit: "%"
+  wb: "SL.UEM.TOTL.MA.ZS"
+  eurostat: "LFST_R_LFU3RT"
+  ilostat: "UNE_DEAP_SEX_AGE_RT"
+  description: "Male unemployment rate"
+
+youth_unemployment:
+  label: "Youth unemployment rate (15-24)"
+  unit: "%"
+  wb: "SL.UEM.1524.ZS"
+  eurostat: "YTH_EMPL_090"
+  oecd: "LFS_SEXAGE_I_R.UR.Y15T24"
+  ilostat: "UNE_DEAP_SEX_AGE_RT"
+  description: "Unemployment rate for ages 15-24"
+
+long_term_unemployment:
+  label: "Long-term unemployment rate"
+  unit: "% of labor force"
+  wb: "SL.UEM.LTRM.ZS"
+  eurostat: "UNE_LTU_A"
+  oecd: "LTU_RATE"
+  ilostat: "UNE_TUNE_SEX_AGE_DUR_RT"
+  description: "Unemployed 12+ months as percentage of labor force"
+
+youth_neet:
+  label: "Youth NEET rate"
+  unit: "%"
+  wb: "SL.UEM.NEET.ZS"
+  eurostat: "EDAT_LFSE_20"
+  oecd: "NEET"
+  ilostat: "SDG_0861_SEX_RT"
+  description: "Youth not in employment, education or training"
+
+# ============================================================================
+# LABOR MARKET - Wages & Working Conditions
+# ============================================================================
+
+wage_gap_gender:
+  label: "Gender wage gap"
+  unit: "%"
+  eurostat: "EARN_GR_GPGR2"
+  oecd: "EARN.GENDERWAGE_RT.A"
+  description: "Difference in median earnings, male vs female"
+
+minimum_wage:
+  label: "Minimum wage"
+  unit: "USD PPP"
+  oecd: "MIN2AVE.MIN_WAGE.A"
+  eurostat: "EARN_MW_CUR"
+  description: "Statutory minimum wage in purchasing power parity"
+
+average_wages:
+  label: "Average annual wages"
+  unit: "USD PPP"
+  oecd: "AV_AN_WAGE"
+  description: "Average annual wages in PPP"
+
+labor_productivity:
+  label: "Labor productivity"
+  unit: "USD per hour worked"
+  wb: "SL.GDP.PCAP.EM.KD"
+  eurostat: "NAMA_10_LP_ULC"
+  oecd: "PDB_LV.VPROD.A"
+  ilostat: "GDP_211P_NOC_RT"
+  description: "GDP per hour worked"
+
+hours_worked_weekly:
+  label: "Average weekly hours worked"
+  unit: "hours"
+  eurostat: "LFSA_EWHAIS"
+  oecd: "ANHRS"
+  ilostat: "HOW_TEMP_SEX_ECO_NB"
+  description: "Average weekly hours actually worked per employed person"
+
+unit_labor_cost:
+  label: "Unit labor cost"
+  unit: "index"
+  eurostat: "NAMA_10_LP_ULC"
+  oecd: "ULC_EEQ"
+  description: "Labor cost per unit of output"
+
+labor_share_gdp:
+  label: "Labor share of GDP"
+  unit: "%"
+  wb: "SL.EMP.VULN.ZS"
+  oecd: "SNA_TABLE1.WSS.S"
+  ilostat: "LAP_2GDP_NOC_RT"
+  description: "Compensation of employees as share of GDP"
+
+# ============================================================================
+# POPULATION & DEMOGRAPHICS
+# ============================================================================
+
+population_total:
+  label: "Total population"
+  unit: "persons"
+  wb: "SP.POP.TOTL"
+  eurostat: "DEMO_GIND"
+  oecd: "DSD_DEMOG.POP_TOT.A"
+  description: "Total population"
+
+population_growth:
+  label: "Population growth rate"
+  unit: "%"
+  wb: "SP.POP.GROW"
+  eurostat: "DEMO_GIND"
+  description: "Annual population growth rate"
+
+population_density:
+  label: "Population density"
+  unit: "people per sq km"
+  wb: "EN.POP.DNST"
+  eurostat: "DEMO_R_D3DENS"
+  description: "Population per square kilometer of land area"
+
+urban_population:
+  label: "Urban population"
+  unit: "% of total"
+  wb: "SP.URB.TOTL.IN.ZS"
+  description: "Urban population as percentage of total"
+
+rural_population:
+  label: "Rural population"
+  unit: "% of total"
+  wb: "SP.RUR.TOTL.ZS"
+  description: "Rural population as percentage of total"
+
+median_age:
+  label: "Median age"
+  unit: "years"
+  eurostat: "DEMO_PJANIND"
+  description: "Median age of population"
+
+dependency_ratio_old:
+  label: "Old-age dependency ratio"
+  unit: "%"
+  wb: "SP.POP.DPND.OL"
+  eurostat: "DEMO_PJANIND"
+  oecd: "DSD_DEMOG.DEP_RATIO_OLD"
+  description: "Ratio of people 65+ to working-age population"
+
+dependency_ratio_young:
+  label: "Young-age dependency ratio"
+  unit: "%"
+  wb: "SP.POP.DPND.YG"
+  eurostat: "DEMO_PJANIND"
+  description: "Ratio of people 0-14 to working-age population"
+
+fertility_rate:
+  label: "Fertility rate"
+  unit: "births per woman"
+  wb: "SP.DYN.TFRT.IN"
+  eurostat: "DEMO_FRATE"
+  oecd: "DSD_DEMOG.FERTILITY.A"
+  description: "Total fertility rate (births per woman)"
+
+birth_rate:
+  label: "Birth rate"
+  unit: "per 1,000 population"
+  wb: "SP.DYN.CBRT.IN"
+  eurostat: "DEMO_GIND"
+  description: "Crude birth rate per 1,000 population"
+
+death_rate:
+  label: "Death rate"
+  unit: "per 1,000 population"
+  wb: "SP.DYN.CDRT.IN"
+  eurostat: "DEMO_GIND"
+  description: "Crude death rate per 1,000 population"
+
+net_migration:
+  label: "Net migration rate"
+  unit: "per 1,000 population"
+  wb: "SM.POP.NETM"
+  eurostat: "DEMO_GIND"
+  description: "Net migration rate per 1,000 population"
+
+# ============================================================================
+# HEALTH
+# ============================================================================
+
+life_expectancy:
+  label: "Life expectancy at birth"
+  unit: "years"
+  wb: "SP.DYN.LE00.IN"
+  eurostat: "DEMO_MLEXPEC"
+  oecd: "HEALTH_STAT.LIFEXP.TOT"
+  description: "Life expectancy at birth, total years"
+
+life_expectancy_female:
+  label: "Life expectancy at birth, female"
+  unit: "years"
+  wb: "SP.DYN.LE00.FE.IN"
+  eurostat: "DEMO_MLEXPEC"
+  description: "Life expectancy at birth for females"
+
+life_expectancy_male:
+  label: "Life expectancy at birth, male"
+  unit: "years"
+  wb: "SP.DYN.LE00.MA.IN"
+  eurostat: "DEMO_MLEXPEC"
+  description: "Life expectancy at birth for males"
+
+infant_mortality:
+  label: "Infant mortality rate"
+  unit: "per 1,000 live births"
+  wb: "SP.DYN.IMRT.IN"
+  eurostat: "DEMO_MINFIND"
+  oecd: "HEALTH_STAT.INFMORT"
+  description: "Infant deaths per 1,000 live births"
+
+maternal_mortality:
+  label: "Maternal mortality ratio"
+  unit: "per 100,000 live births"
+  wb: "SH.STA.MMRT"
+  description: "Maternal deaths per 100,000 live births"
+
+health_expenditure:
+  label: "Health expenditure"
+  unit: "% of GDP"
+  wb: "SH.XPD.CHEX.GD.ZS"
+  eurostat: "HLTH_SHA11_HF"
+  oecd: "SHA.HFTOT.A"
+  description: "Total health expenditure as percentage of GDP"
+
+health_expenditure_per_capita:
+  label: "Health expenditure per capita"
+  unit: "USD PPP"
+  wb: "SH.XPD.CHEX.PP.CD"
+  oecd: "SHA.HFTOT.PC"
+  description: "Health expenditure per capita in PPP"
+
+hospital_beds:
+  label: "Hospital beds"
+  unit: "per 1,000 population"
+  wb: "SH.MED.BEDS.ZS"
+  eurostat: "HLTH_RS_BDS"
+  oecd: "HEALTH_REAC.HOSPBED"
+  description: "Hospital beds per 1,000 population"
+
+physicians:
+  label: "Physicians"
+  unit: "per 1,000 population"
+  wb: "SH.MED.PHYS.ZS"
+  eurostat: "HLTH_RS_PRS1"
+  oecd: "HEALTH_REAC.PHYS"
+  description: "Physicians per 1,000 population"
+
+obesity_rate:
+  label: "Obesity rate"
+  unit: "% of adults"
+  wb: "SH.STA.OB18.ZS"
+  eurostat: "HLTH_EHIS_BM1E"
+  oecd: "HEALTH_LVNG.OBADLT.A"
+  description: "Adult obesity prevalence"
+
+# ============================================================================
+# EDUCATION
+# ============================================================================
+
+education_tertiary:
+  label: "Tertiary education completion"
+  unit: "% of population 25-64"
+  wb: "SE.TER.CUAT.BA.ZS"
+  eurostat: "EDAT_LFS_9903"
+  oecd: "EAG_NEAC.ISCED11_5T8.T.PC_25T64"
+  description: "Tertiary education attainment"
+
+education_secondary:
+  label: "Secondary education completion"
+  unit: "% of population 25-64"
+  wb: "SE.SEC.CUAT.UP.ZS"
+  eurostat: "EDAT_LFS_9903"
+  oecd: "EAG_NEAC.ISCED11_3T8"
+  description: "Upper secondary education attainment"
+
+education_spending:
+  label: "Government expenditure on education"
+  unit: "% of GDP"
+  wb: "SE.XPD.TOTL.GD.ZS"
+  eurostat: "EDUC_UOE_FINE09"
+  oecd: "EAG_FIN_RATIO.TOTAL_E"
+  description: "Public education spending as percentage of GDP"
+
+school_enrollment_primary:
+  label: "Primary school enrollment"
+  unit: "% gross"
+  wb: "SE.PRM.ENRR"
+  eurostat: "EDUC_UOE_ENRA01"
+  description: "Gross enrollment ratio, primary education"
+
+school_enrollment_secondary:
+  label: "Secondary school enrollment"
+  unit: "% gross"
+  wb: "SE.SEC.ENRR"
+  eurostat: "EDUC_UOE_ENRA02"
+  description: "Gross enrollment ratio, secondary education"
+
+school_enrollment_tertiary:
+  label: "Tertiary school enrollment"
+  unit: "% gross"
+  wb: "SE.TER.ENRR"
+  eurostat: "EDUC_UOE_ENRA03"
+  description: "Gross enrollment ratio, tertiary education"
+
+adult_literacy:
+  label: "Adult literacy rate"
+  unit: "%"
+  wb: "SE.ADT.LITR.ZS"
+  description: "Literacy rate among population 15+"
+
+pisa_math:
+  label: "PISA math score"
+  unit: "score"
+  oecd: "PISA.MATH"
+  description: "PISA mathematics performance score"
+
+pisa_reading:
+  label: "PISA reading score"
+  unit: "score"
+  oecd: "PISA.READ"
+  description: "PISA reading performance score"
+
+pisa_science:
+  label: "PISA science score"
+  unit: "score"
+  oecd: "PISA.SCIE"
+  description: "PISA science performance score"
+
+# ============================================================================
+# POVERTY & INEQUALITY
+# ============================================================================
+
+poverty_rate:
+  label: "Poverty headcount ratio at $2.15/day"
+  unit: "% of population"
+  wb: "SI.POV.DDAY"
+  description: "Population living below $2.15 per day (2017 PPP)"
+
+poverty_rate_national:
+  label: "Poverty headcount ratio, national line"
+  unit: "% of population"
+  wb: "SI.POV.NAHC"
+  description: "Population below national poverty line"
+
+gini_coefficient:
+  label: "Gini index"
+  unit: "index 0-100"
+  wb: "SI.POV.GINI"
+  eurostat: "ILC_DI12"
+  oecd: "IDD.GINI"
+  description: "Income inequality measure (0=perfect equality)"
+
+income_share_bottom_20:
+  label: "Income share, lowest 20%"
+  unit: "%"
+  wb: "SI.DST.FRST.20"
+  description: "Share of income held by lowest 20%"
+
+income_share_top_10:
+  label: "Income share, highest 10%"
+  unit: "%"
+  wb: "SI.DST.10TH.10"
+  description: "Share of income held by highest 10%"
+
+at_risk_of_poverty:
+  label: "At risk of poverty rate"
+  unit: "%"
+  eurostat: "ILC_LI02"
+  oecd: "IDD.POVRATE"
+  description: "Population at risk of poverty after social transfers"
+
+social_protection_spending:
+  label: "Social protection expenditure"
+  unit: "% of GDP"
+  eurostat: "SPR_EXP_SUM"
+  oecd: "SOCX_AGG.TOTAL"
+  description: "Government spending on social protection"
+
+# ============================================================================
+# ENVIRONMENT & ENERGY
+# ============================================================================
+
+carbon_emissions:
+  label: "CO2 emissions"
+  unit: "metric tons per capita"
+  wb: "EN.ATM.CO2E.PC"
+  eurostat: "ENV_AIR_GGE"
+  oecd: "AIR_GHGT.CO2.T_HAB"
+  description: "Carbon dioxide emissions per capita"
+
+carbon_emissions_total:
+  label: "CO2 emissions total"
+  unit: "kt"
+  wb: "EN.ATM.CO2E.KT"
+  eurostat: "ENV_AIR_GGE"
+  description: "Total carbon dioxide emissions in kilotons"
+
+greenhouse_gas_emissions:
+  label: "Greenhouse gas emissions"
+  unit: "tonnes CO2 eq per capita"
+  eurostat: "ENV_AIR_GGE"
+  oecd: "AIR_GHGT.GHG.T_HAB"
+  description: "Total GHG emissions per capita"
+
+energy_renewable:
+  label: "Renewable energy consumption"
+  unit: "% of total"
+  wb: "EG.FEC.RNEW.ZS"
+  eurostat: "NRG_IND_REN"
+  oecd: "IEA_REN.RENEWELC.PC"
+  description: "Renewable energy as percentage of total consumption"
+
+energy_intensity:
+  label: "Energy intensity"
+  unit: "MJ per USD GDP"
+  wb: "EG.EGY.PRIM.PP.KD"
+  eurostat: "NRG_IND_EI"
+  description: "Energy use per unit of GDP"
+
+electricity_access:
+  label: "Access to electricity"
+  unit: "% of population"
+  wb: "EG.ELC.ACCS.ZS"
+  description: "Population with access to electricity"
+
+forest_area:
+  label: "Forest area"
+  unit: "% of land area"
+  wb: "AG.LND.FRST.ZS"
+  eurostat: "FOR_AREA"
+  description: "Forest area as percentage of land area"
+
+pm25_exposure:
+  label: "PM2.5 air pollution"
+  unit: "µg/m³"
+  wb: "EN.ATM.PM25.MC.M3"
+  eurostat: "SDG_11_50"
+  description: "Mean annual exposure to PM2.5"
+
+water_access:
+  label: "Access to safe drinking water"
+  unit: "% of population"
+  wb: "SH.H2O.SMDW.ZS"
+  description: "Population using safely managed drinking water"
+
+sanitation_access:
+  label: "Access to sanitation"
+  unit: "% of population"
+  wb: "SH.STA.SMSS.ZS"
+  description: "Population using safely managed sanitation"
+
+# ============================================================================
+# TECHNOLOGY & INNOVATION
+# ============================================================================
+
+research_development:
+  label: "Research and development expenditure"
+  unit: "% of GDP"
+  wb: "GB.XPD.RSDV.GD.ZS"
+  eurostat: "RD_E_GERDTOT"
+  oecd: "MSTI_PUB.GERD_TOT.PCT_GDP"
+  description: "R&D expenditure as percentage of GDP"
+
+researchers:
+  label: "Researchers in R&D"
+  unit: "per million population"
+  wb: "SP.POP.SCIE.RD.P6"
+  eurostat: "RD_P_PERSREG"
+  oecd: "MSTI_PUB.RESEARCHERS"
+  description: "Researchers per million population"
+
+patent_applications:
+  label: "Patent applications"
+  unit: "applications"
+  wb: "IP.PAT.RESD"
+  oecd: "PAT_DEV.TOTAL"
+  description: "Resident patent applications"
+
+internet_users:
+  label: "Internet users"
+  unit: "% of population"
+  wb: "IT.NET.USER.ZS"
+  eurostat: "ISOC_CI_IFP_IU"
+  description: "Individuals using the Internet"
+
+broadband_subscriptions:
+  label: "Fixed broadband subscriptions"
+  unit: "per 100 inhabitants"
+  wb: "IT.NET.BBND.P2"
+  eurostat: "ISOC_CI_IT_H"
+  oecd: "BROADBAND_DB.FIX_BB"
+  description: "Fixed broadband subscriptions per 100 people"
+
+mobile_subscriptions:
+  label: "Mobile cellular subscriptions"
+  unit: "per 100 inhabitants"
+  wb: "IT.CEL.SETS.P2"
+  eurostat: "ISOC_CI_IT_H"
+  description: "Mobile cellular subscriptions per 100 people"
+
+high_tech_exports:
+  label: "High-technology exports"
+  unit: "% of manufactured exports"
+  wb: "TX.VAL.TECH.MF.ZS"
+  description: "High-tech exports as share of manufactured exports"
+
+# ============================================================================
+# GOVERNANCE & INSTITUTIONS
+# ============================================================================
+
+government_effectiveness:
+  label: "Government effectiveness"
+  unit: "index -2.5 to 2.5"
+  wb: "GE.EST"
+  description: "Perceptions of government quality and policy implementation"
+
+rule_of_law:
+  label: "Rule of law"
+  unit: "index -2.5 to 2.5"
+  wb: "RL.EST"
+  description: "Perceptions of rule of law and property rights"
+
+control_of_corruption:
+  label: "Control of corruption"
+  unit: "index -2.5 to 2.5"
+  wb: "CC.EST"
+  description: "Perceptions of corruption control"
+
+regulatory_quality:
+  label: "Regulatory quality"
+  unit: "index -2.5 to 2.5"
+  wb: "RQ.EST"
+  description: "Perceptions of policy quality and private sector development"
+
+political_stability:
+  label: "Political stability"
+  unit: "index -2.5 to 2.5"
+  wb: "PV.EST"
+  description: "Perceptions of political stability and absence of violence"
+
+voice_accountability:
+  label: "Voice and accountability"
+  unit: "index -2.5 to 2.5"
+  wb: "VA.EST"
+  description: "Perceptions of participation and free media"

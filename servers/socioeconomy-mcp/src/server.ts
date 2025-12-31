@@ -10,6 +10,8 @@ import { explainRouting } from './tools/explain_routing.js';
 import { mapRegionCode } from './tools/map_region_code.js';
 import { listSemanticIds } from './tools/list_semantic_ids.js';
 import { getCoverage } from './tools/get_coverage.js';
+import { getLatest, getLatestSchema } from './tools/get_latest.js';
+import { compareRegions, compareRegionsSchema } from './tools/compare_regions.js';
 import { z } from 'zod';
 
 // Additional schemas for tools that don't export them
@@ -132,6 +134,33 @@ server.tool(
   },
   async (params) => {
     const result = await getCoverage(getCoverageSchema.parse(params));
+    return result;
+  }
+);
+
+server.tool(
+  'socio_get_latest',
+  {
+    semanticId: getLatestSchema.shape.semanticId,
+    geo: getLatestSchema.shape.geo,
+    prefer: getLatestSchema.shape.prefer
+  },
+  async (params) => {
+    const result = await getLatest(getLatestSchema.parse(params));
+    return result;
+  }
+);
+
+server.tool(
+  'socio_compare_regions',
+  {
+    semanticId: compareRegionsSchema.shape.semanticId,
+    regions: compareRegionsSchema.shape.regions,
+    year: compareRegionsSchema.shape.year,
+    includeGrowth: compareRegionsSchema.shape.includeGrowth
+  },
+  async (params) => {
+    const result = await compareRegions(compareRegionsSchema.parse(params));
     return result;
   }
 );
