@@ -111,7 +111,8 @@ export async function getSeries(params: GetSeriesParams) {
             series = await getWbSeries(providerId, geo, years);
             break;
           case 'eurostat':
-            series = await getEurostatSeries(providerId, years, geo);
+            // Pass semantic ID for proper dimension filtering
+            series = await getEurostatSeries(providerId, years, geo, resolvedSemanticId);
             break;
           case 'oecd':
             series = await getOecdSeries(providerId, geo, years);

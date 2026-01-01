@@ -98,7 +98,8 @@ export async function getLatest(params: GetLatestParams) {
             series = await getWbSeries(providerId, geo, undefined, { mrv: 1, mrnev: true });
             break;
           case 'eurostat':
-            series = await getEurostatSeries(providerId, recentYears, geo);
+            // Pass semantic ID for proper dimension filtering
+            series = await getEurostatSeries(providerId, recentYears, geo, resolvedSemanticId);
             break;
           case 'oecd':
             series = await getOecdSeries(providerId, geo, recentYears);

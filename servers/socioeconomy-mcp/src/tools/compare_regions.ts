@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { loadEquivalenceYaml, DefaultRoutingPolicy, resolveSemanticId } from '@cluster-mcp/core';
-import { getWbSeries, WB_REGION_CODES, WB_INCOME_LEVELS, getCountriesByIncomeLevel } from '../providers/wb.js';
-import type { Series } from '@cluster-mcp/core';
+import { getWbSeries, WB_REGION_CODES, WB_INCOME_LEVELS } from '../providers/wb.js';
+import { getEurostatSeries } from '../providers/eurostat.js';
+import { getOecdSeries } from '../providers/oecd.js';
+import { getIloSeries } from '../providers/ilostat.js';
+import type { Series, ProviderKey } from '@cluster-mcp/core';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { prepareSocioeconomicAliases } from '../aliases.js';
@@ -15,7 +18,8 @@ export const compareRegionsSchema = z.object({
     'Array of region codes to compare. Can be ISO2 country codes, or World Bank aggregates like WLD (World), EUU (European Union), OED (OECD), HIC (High Income), etc.'
   ),
   year: z.number().optional().describe('Year to compare (defaults to latest available)'),
-  includeGrowth: z.boolean().optional().describe('Include year-over-year growth rate')
+  includeGrowth: z.boolean().optional().describe('Include year-over-year growth rate'),
+  prefer: z.enum(['eurostat', 'oecd', 'wb', 'ilostat']).optional().describe('Preferred provider')
 });
 
 export type CompareRegionsParams = z.infer<typeof compareRegionsSchema>;
@@ -27,14 +31,84 @@ interface RegionComparison {
   year: string;
   growth?: number | null;
   rank: number;
+  provider?: string;
+}
+
+/**
+ * Fetch series data from the best available provider for a region.
+ * Uses provider fallback similar to get_latest.
+ */
+async function fetchRegionData(
+  providerIds: Record<string, string>,
+  region: string,
+  yearRange: [number, number],
+  resolvedSemanticId: string,
+  prefer?: string
+): Promise<{ series: Series; provider: string } | null> {
+  const regionUpper = region.toUpperCase();
+  const isAggregate = WB_REGION_CODES[regionUpper] !== undefined;
+
+  // Build provider order
+  let providerOrder: ProviderKey[] = [];
+
+  // For aggregates (WLD, EUU, OED, HIC, etc.), prefer World Bank
+  if (isAggregate && providerIds['wb']) {
+    providerOrder = ['wb'];
+  } else {
+    // For individual countries, use all available providers
+    providerOrder = ['wb', 'eurostat', 'oecd', 'ilostat'].filter(
+      p => providerIds[p]
+    ) as ProviderKey[];
+
+    // Apply preference
+    if (prefer && providerIds[prefer]) {
+      providerOrder = [prefer as ProviderKey, ...providerOrder.filter(p => p !== prefer)];
+    }
+  }
+
+  for (const provider of providerOrder) {
+    const providerId = providerIds[provider];
+    if (!providerId) continue;
+
+    try {
+      let series: Series;
+
+      switch (provider) {
+        case 'wb':
+          series = await getWbSeries(providerId, regionUpper, yearRange);
+          break;
+        case 'eurostat':
+          series = await getEurostatSeries(providerId, yearRange, regionUpper, resolvedSemanticId);
+          break;
+        case 'oecd':
+          series = await getOecdSeries(providerId, regionUpper, yearRange);
+          break;
+        case 'ilostat':
+          series = await getIloSeries(providerId, regionUpper, yearRange);
+          break;
+        default:
+          continue;
+      }
+
+      if (series.values.length > 0) {
+        return { series, provider };
+      }
+    } catch (error) {
+      // Continue to next provider
+      continue;
+    }
+  }
+
+  return null;
 }
 
 /**
  * Compare an indicator across multiple regions or aggregates.
  * Supports World Bank region aggregates (WLD, EUU, OED, etc.) and income levels (HIC, MIC, LIC).
+ * Falls back through multiple providers for country-level data.
  */
 export async function compareRegions(params: CompareRegionsParams) {
-  const { semanticId, regions, year, includeGrowth = false } = params;
+  const { semanticId, regions, year, includeGrowth = false, prefer } = params;
 
   try {
     const equivalenceFile = join(__dirname, '..', 'equivalence.yml');
@@ -45,17 +119,14 @@ export async function compareRegions(params: CompareRegionsParams) {
 
     const providerIds = router.getProviderIds(resolvedSemanticId);
 
-    // For region comparison, we use World Bank as it has the best aggregate coverage
-    const wbId = providerIds['wb'];
-    if (!wbId) {
+    if (Object.keys(providerIds).length === 0) {
       return {
         content: [{
           type: 'text' as const,
           text: JSON.stringify({
-            error: 'WORLD_BANK_NOT_AVAILABLE',
-            message: `Region comparison requires World Bank mapping, which is not available for ${resolvedSemanticId}`,
-            availableProviders: Object.keys(providerIds),
-            suggestion: 'Try socio_get_series_batch for country-level comparison'
+            error: 'NO_PROVIDER_MAPPINGS',
+            message: `No provider mappings found for ${resolvedSemanticId}`,
+            suggestion: 'Use search_indicator to find available indicators'
           }, null, 2)
         }]
       };
@@ -66,8 +137,8 @@ export async function compareRegions(params: CompareRegionsParams) {
 
     // Determine the year range based on whether we need growth
     const yearRange: [number, number] = includeGrowth
-      ? [targetYear - 1, targetYear]
-      : [targetYear - 2, targetYear]; // Small buffer for data availability
+      ? [targetYear - 2, targetYear]
+      : [targetYear - 3, targetYear]; // Buffer for data availability
 
     const results: RegionComparison[] = [];
     const errors: Record<string, string> = {};
@@ -78,10 +149,16 @@ export async function compareRegions(params: CompareRegionsParams) {
       const regionName = WB_REGION_CODES[regionUpper] || regionUpper;
 
       try {
-        const series = await getWbSeries(wbId, regionUpper, yearRange);
+        const result = await fetchRegionData(
+          providerIds,
+          regionUpper,
+          yearRange,
+          resolvedSemanticId,
+          prefer
+        );
 
-        if (series.values.length === 0) {
-          errors[region] = 'No data available';
+        if (!result) {
+          errors[region] = 'No data available from any provider';
           results.push({
             region: regionUpper,
             regionName,
@@ -92,6 +169,8 @@ export async function compareRegions(params: CompareRegionsParams) {
           });
           continue;
         }
+
+        const { series, provider } = result;
 
         // Find the closest year to target
         const sortedValues = [...series.values].sort((a, b) =>
@@ -117,7 +196,8 @@ export async function compareRegions(params: CompareRegionsParams) {
           value: latestValue.value,
           year: latestValue.time,
           growth,
-          rank: 0 // Will be calculated below
+          rank: 0, // Will be calculated below
+          provider
         });
 
       } catch (error) {
@@ -135,8 +215,9 @@ export async function compareRegions(params: CompareRegionsParams) {
 
     // Calculate rankings (higher value = rank 1, unless unit suggests lower is better)
     const indicatorMeta = equivalenceData[resolvedSemanticId];
-    const lowerIsBetter = ['unemployment', 'poverty', 'inflation', 'debt', 'emissions']
-      .some(term => resolvedSemanticId.toLowerCase().includes(term));
+    const lowerIsBetter = indicatorMeta?.lowerIsBetter ||
+      ['unemployment', 'poverty', 'inflation', 'debt', 'emissions', 'gini']
+        .some(term => resolvedSemanticId.toLowerCase().includes(term));
 
     const validResults = results.filter(r => r.value !== null);
     validResults.sort((a, b) =>
@@ -174,6 +255,7 @@ export async function compareRegions(params: CompareRegionsParams) {
           }),
           statistics: stats,
           errors: Object.keys(errors).length > 0 ? errors : undefined,
+          availableProviders: Object.keys(providerIds),
           availableRegionCodes: Object.keys(WB_REGION_CODES),
           availableIncomeLevels: WB_INCOME_LEVELS
         }, null, 2)

@@ -618,23 +618,26 @@ adult_literacy:
   wb: "SE.ADT.LITR.ZS"
   description: "Literacy rate among population 15+"
 
-pisa_math:
-  label: "PISA math score"
-  unit: "score"
-  oecd: "PISA.MATH"
-  description: "PISA mathematics performance score"
-
-pisa_reading:
-  label: "PISA reading score"
-  unit: "score"
-  oecd: "PISA.READ"
-  description: "PISA reading performance score"
-
-pisa_science:
-  label: "PISA science score"
-  unit: "score"
-  oecd: "PISA.SCIE"
-  description: "PISA science performance score"
+# NOTE: PISA data is no longer available via OECD SDMX API (as of 2024).
+# PISA databases are distributed as downloadable files (SAS/SPSS format).
+# See: https://www.oecd.org/en/data/datasets/pisa-2022-database.html
+# pisa_math:
+#   label: "PISA math score"
+#   unit: "score"
+#   oecd: "PISA.MATH"
+#   description: "PISA mathematics performance score"
+#
+# pisa_reading:
+#   label: "PISA reading score"
+#   unit: "score"
+#   oecd: "PISA.READ"
+#   description: "PISA reading performance score"
+#
+# pisa_science:
+#   label: "PISA science score"
+#   unit: "score"
+#   oecd: "PISA.SCIE"
+#   description: "PISA science performance score"
 
 # ============================================================================
 # POVERTY & INEQUALITY
@@ -655,6 +658,7 @@ poverty_rate_national:
 gini_coefficient:
   label: "Gini index"
   unit: "index 0-100"
+  lowerIsBetter: true
   wb: "SI.POV.GINI"
   eurostat: "ILC_DI12"
   oecd: "IDD.GINI"
